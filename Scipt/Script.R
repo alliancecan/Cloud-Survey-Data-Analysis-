@@ -59,14 +59,14 @@ option2 <-
 
 option2_select <- 
   option2 %>% 
-  subset(Ques_num == "X1" | Ques_num =="X2") %>% #select only questions X1 and X2
+  subset(Ques_num == "X7" | Ques_num =="X20") %>% #select only questions X1 and X2
   drop_na(Answer) %>% #Delete all empty rows
   rename(ID = X.U.FEFF.Internal.ID) %>%
   select(-Ques) %>% #delete column Ques
-  mutate(question = if_else(Ques_num == "X1", "Role", "Province")) %>% #Create a new colum based on a condition
+  mutate(question = if_else(Ques_num == "X7", "X7", "X20")) %>% #Create a new colum based on a condition
   select(-Ques_num) #delete column Ques_num
 
-unique_id <- c(1:569) #Create unique ID for the function "spread"
+unique_id <- c(1:680) #Create unique ID for the function "spread"
 
 option2_select_spread <- 
   cbind(unique_id, option2_select)
@@ -79,4 +79,7 @@ test2 <- pivot_wider(option2_select,
                      values_fn = list)
 # Analyze the data --------------------------------------------------------
 
+option2 <- drop_na(option2, Answer)
+
+table <- reshape(option2, idvar = "X.U.FEFF.Internal.ID", timevar = "Ques_num", direction = "wide")
 
