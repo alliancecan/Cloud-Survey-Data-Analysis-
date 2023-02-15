@@ -1,8 +1,6 @@
 
 # Prepare the directory and load the libraries ----------------------------
 
-
-
 #Set working directory
 setwd("C:/Users/fsdha/OneDrive - 11593765 Canada Association/Fares Drive/Works in progress/Cloud survey")
 
@@ -44,7 +42,10 @@ for(i in seq_along(n_question)) {
   my_list[[i]] <- select(survey, contains(n_question[i]))#for loop to spread the questions into independent dataframes (dfs)
 }
 
-option1 <- lapply(seq_along(my_list), function(i) cbind(id_status, my_list[[i]])) #bind ID and status to the different dfs
+option1 <- 
+  lapply(seq_along(my_list), 
+         function(i) cbind(id_status, 
+                           my_list[[i]])) #bind ID and status to the different dfs
 length(option1)
 #Option 1 is a list of questions
 
@@ -83,3 +84,19 @@ option2 <- drop_na(option2, Answer)
 
 table <- reshape(option2, idvar = "X.U.FEFF.Internal.ID", timevar = "Ques_num", direction = "wide")
 
+############## different approach
+
+df <- as_tibble(drop_na(option2, Answer))
+
+df_sep <- within(df, Ques<-data.frame(do.call('rbind', strsplit(as.character(Ques), '..', fixed=TRUE))))
+df_sep <- df_sep %>% select()
+
+df_replace_dots <-
+  gsub("[.]", "-", df$Ques) 
+df_replace_dots <- as.character(df_replace_dots)
+
+
+separate(df_replace_dots ,x, c("aa", "bb"), "--")
+
+aa <- df %>% 
+extract(Ques, c("aa", "bb"), "([[:graph:]]+)..([[:graph:]])")
