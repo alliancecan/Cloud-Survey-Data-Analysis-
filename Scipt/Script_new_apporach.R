@@ -27,7 +27,6 @@ survey_organized <-
 survey_organized_clean <- 
   survey_organized %>% 
   left_join(questions_n, by = "Ques_num") %>% 
-  select(-Ques) %>% 
   rename(Respond_ID = X.U.FEFF.Internal.ID)
 
 #Create a unique ID per row to spread the data = each question in a separate column
@@ -105,3 +104,20 @@ survey_questions_manually_spread <- pivot_wider(survey_questions_manually,
                                                 names_from = question,
                                                 values_from = Answer,
                                                 values_fn = list) #this option create a list, not ideal for data anlysis
+
+df <- apply(survey_questions_manually_spread,2,as.character)#unlist the df so I can save it in csv
+# write.csv(df, "df.csv")
+
+#Load the table = this table has one respondant per row, and one question per column. A cell can contains more than one answer, if the question is multiple choice.
+
+df <- read.csv("df.csv")
+
+
+# Data analyzes - option 1: tidy data -------------------------------------
+#Use: cleaned version of survey_organized_clean
+survey_organized_clean_V1 <- read.csv("survey_organized_clean_V1.csv")
+
+aa <- survey_organized_clean_V1 %>% 
+  group_by(Ques_num, Answer) %>% 
+  count()
+
