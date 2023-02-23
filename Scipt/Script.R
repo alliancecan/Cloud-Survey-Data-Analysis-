@@ -58,19 +58,17 @@ option2 <-
   extract(Question, c("Ques_num", "Ques"), "([[:alnum:]]+)..([[:graph:]]+)") #%>%
 # spread(Ques_num, Answer)
 
-option2_select <- 
-  option2 %>% 
-  subset(Ques_num == "X7" | Ques_num =="X20") %>% #select only questions X1 and X2
-  drop_na(Answer) %>% #Delete all empty rows
-  rename(ID = X.U.FEFF.Internal.ID) %>%
-  select(-Ques) %>% #delete column Ques
-  mutate(question = if_else(Ques_num == "X7", "X7", "X20")) %>% #Create a new colum based on a condition
-  select(-Ques_num) #delete column Ques_num
+questions_n <- read.csv("questions_n.csv")
 
-unique_id <- c(1:680) #Create unique ID for the function "spread"
+option2_clean <- 
+  option2 %>% 
+  left_join(questions_n, by = "Ques_num") %>% 
+  select(-Ques)
+
+unique_id <- c(1:nrow(option2_clean)) #Create unique ID for the function "spread"
 
 option2_select_spread <- 
-  cbind(unique_id, option2_select)
+  cbind(unique_id, option2_clean)
 
 
 test1 <- spread(option2_select_spread, question, Answer)
