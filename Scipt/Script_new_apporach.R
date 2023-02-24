@@ -1,34 +1,51 @@
 # Prepare the directory and load the libraries ----------------------------
 
 ###Set working directory
-setwd("C:/Users/fsdha/OneDrive - 11593765 Canada Association/Fares Drive/Works in progress/Cloud survey")
-
+setwd("D:/Documents/LDP/Productivity and Reproducibility/Git/Cloud-Survey-Data-Analysis-/Data")
 ###load libraries
 library(tidyverse)
 library(stringr)
+library(maps)
+library(mapdata)
+library(ggmap)
+library(ggplot2)
+library(mapcan)
+library(moonBook)
+library(webr)
+library(ggthemes)
+library(RColorBrewer)
+library(rmarkdown)
+library(gtsummary)
+library(gt)
+library(RColorBrewer)
+library(likert)
+library(ggthemes)
 
 ###Load the data
 
-#survey data
-survey <- read.csv("Cloud_Survey2023_UTF.csv",
+#survey data, english and french versions
+survey_en <- read.csv("Final_CloudSurvey_EN_20230221.csv",
                    header = T,
                    encoding = "UTF-8",
-                   na.strings=c("","NA")) %>% 
-  select(-First.name, -Last.name, -Email)
+                   na.strings=c("","NA"))
 
-###
-questions_n <- read.csv("questions_n.csv")#this table has the questions in rows (n=47)
+survey_fr <- read.csv("Final_CloudSurvey_FR_20230221.csv",
+                       header = T,
+                       encoding = "UTF-8",
+                       na.strings=c("","NA"))
 
+#Questions
+questions_n <- read.csv("Questions_n_EN_20230223.csv")#this table has the questions in rows (n=47)
+#To add the french version
 
 # Organizing data ----------------------------------------------------------------
 
 ###Re-organize the data
 survey_organized <- 
-  survey %>%
+  survey_en %>%
   gather("Question",
          "Answer", 
-         -X.U.FEFF.Internal.ID, 
-         -Status) %>%
+         -Internal.ID) %>%
   extract(Question, 
           c("Ques_num", "Ques"), 
           "([[:alnum:]]+)..([[:graph:]]+)") %>% #This function separates question number and question (e.g., X1..Question = X1 | Question)
@@ -37,12 +54,11 @@ survey_organized <-
 #Clean the questions: join the questions from table "questions_n" using the question's number "X.."
 survey_organized_clean <- 
   survey_organized %>% 
-  left_join(questions_n, by = "Ques_num") %>% 
-  rename(Respond_ID = X.U.FEFF.Internal.ID)
+  left_join(questions_n, by = "Ques_num")
 
 survey_organized_clean1 <- 
   survey_organized_clean %>% 
-  select(Respond_ID, Ques_num, Answer)
+  select(Internal.ID, Ques_num, Answer)
 
 survey_organized_spread <- pivot_wider(survey_organized_clean1, 
                                        names_from = Ques_num,
@@ -50,59 +66,37 @@ survey_organized_spread <- pivot_wider(survey_organized_clean1,
                                        values_fn = list)
 
 
-test1 <- head(survey_organized_spread)
 
-test2 <- test1 %>% unnest(X1)
-test3 <- test2 %>% unnest(X3)
+# test2 <- test1 %>% unnest(X1)
+# test3 <- test2 %>% unnest(X3)
+# X7 <- survey_organized_spread %>% unnest(X7)
+# x7_x3 <- X7 %>% unnest(X3) %>% select(Respond_ID, X3, X7)
 
-X7 <- survey_organized_spread %>% unnest(X7)
-x7_x3 <- X7 %>% unnest(X3) %>% select(Respond_ID, X3, X7)
+# Demographic of respondents ----------------------------------------------
 
-survey$TC3 <- recode_factor(survey$TC3, CIHR = "Health Research", 
-                            NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
+survey_x1.x2<- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X1, X2) %>% 
+  unnest(c(X1, X2)) %>% 
+  rename(Geography = X2, Role = X1)
 
-# getting number of respondents in this question.
-
-Workflow <- select(survey, CaseId, TC3, starts_with("G1M"), -ends_with("O")) %>%
-  gather(Option, Source, 3:32) %>% filter(!Source == "")
-
-
-nHR <- filter(Workflow, TC3 == "Health Research") %>% select( CaseId) %>% unique() %>% count() %>% as.numeric() #240
-nSE <- filter(Workflow, TC3 == "Sciences and Engineering") %>% select( CaseId) %>% unique() %>% count() %>% as.numeric()#644
-nSSH <- filter(Workflow, TC3 == "Social Sciences and Humanities") %>% select( CaseId) %>% unique() %>% count() %>% as.numeric() #262
-
-Workflow_Health <- filter(Workflow, TC3=="Health Research") %>%
-  group_by(TC3, Source) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nHR)*100)
-
-Workflow_SciEng <- filter(Workflow, TC3=="Sciences and Engineering") %>%
-  group_by(TC3, Source) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSE)*100)
-
-Workflow_SSH <- filter(Workflow, TC3=="Social Sciences and Humanities") %>%
-  group_by(TC3, Source) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
+survey_x1.x2$Role <- as.factor(survey_x1.x2$Role)
+survey_x1.x2$Role[survey_x1.x2$Role == "Other (please specify)"] <- "NULL"
 
 
-Workflow_Tri <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+#Print demographical table
+demographic %>% 
+  group_by(Geography)%>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n),.by_group = T) %>% 
+  mutate("%" = (n / sum(n))*100) %>%
+  gt()
 
 
-# test4 <- list()#create an empty list
-# for(i in 2:ncol(test2)){
-#   test4[i] <- unnest(test2[i]) %>% unique()
-# }
-#    
-# 
-# 
-# test4 <- list()#create an empty list
-# for(i in 2:ncol(test2)){
-#   test4[i] <- unnest(test2[i])
-# }
-# 
-# sapply(test2, function(i) unnest(test2[i]))
+### Ontario ######
+Ontario <-filter(demographic, Geography %in% "Ontario") %>% 
+  select( Geography, Affiliation) %>%
+  group_by(Affiliation)  %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>%
+  data.frame()
