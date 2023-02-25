@@ -1,7 +1,7 @@
 # Prepare the directory and load the libraries ----------------------------
 
 ###Set working directory
-setwd("D:/Documents/LDP/Productivity and Reproducibility/Git/Cloud-Survey-Data-Analysis-/Data")
+setwd("C:/Users/fsdha/Desktop/Cloud-Survey-Data-Analysis-Fares/Data")
 ###load libraries
 library(tidyverse)
 library(stringr)
@@ -71,19 +71,52 @@ survey_organized_spread <- pivot_wider(survey_organized_clean1,
 # X7 <- survey_organized_spread %>% unnest(X7)
 # x7_x3 <- X7 %>% unnest(X3) %>% select(Respond_ID, X3, X7)
 
-# Demographic of respondents ----------------------------------------------
+# Demographic of respondents - data prep----------------------------------------------
 
+#Roles and geograpgy
 survey_x1.x2<- 
   survey_organized_spread %>% 
   select(Internal.ID, X1, X2) %>% 
   unnest(c(X1, X2)) %>% 
   rename(Geography = X2, Role = X1)
 
-survey_x1.x2$Role <- as.factor(survey_x1.x2$Role)
-survey_x1.x2$Role[survey_x1.x2$Role == "Other (please specify)"] <- "NULL"
+roles <- read.csv("Survey_roles_20230223.csv")
+
+#Delete answers in "other (please specify)
+survey.x1.x2.no <- 
+  survey_x1.x2 %>% 
+  left_join(roles, by = "Role") %>% 
+  filter(Need_to_be_changed == "no")
+
+#Check that the number of others = the number of indep answers
+survey.x1.x2.no %>% 
+  group_by(Role) %>% 
+  count() #other = 39
+
+survey.x1.x2.yes <- 
+  survey_x1.x2 %>% 
+  left_join(roles, by = "Role") %>% 
+  filter(Need_to_be_changed == "yes")
+
+no <- survey.x1.x2.yes %>% 
+  group_by(Role) %>% 
+  count()
+
+sum(no$n) # = 38
+
+###produce nested table: roles per demography
+survey.x1.x2 <- 
+  survey.x1.x2.no %>% 
+  select(Internal.ID, Role, Geography)
 
 
 #Print demographical table
+demographic <- 
+  survey.x1.x2 %>% 
+  select(-Role) %>% 
+  unique() %>% 
+  drop_na()
+
 demographic %>% 
   group_by(Geography)%>% 
   summarize(n = n()) %>% 
@@ -93,9 +126,112 @@ demographic %>%
 
 
 ### Ontario ######
-Ontario <-filter(demographic, Geography %in% "Ontario") %>% 
-  select( Geography, Affiliation) %>%
-  group_by(Affiliation)  %>% 
+Ontario <-filter(survey.x1.x2, Geography %in% "Ontario") %>% 
+  select( Geography, Role) %>%
+  group_by(Role)  %>% 
   summarize(n = n()) %>% 
   arrange(n) %>%
   data.frame()
+
+Ontario$Role <- factor(Ontario$Role, levels=unique(Ontario$Role))
+
+
+#### Bar graph for Role - Ontario #####
+ggplot(Ontario, aes(x = Role)) +
+  geom_col(aes(y=n, fill=Role)) + 
+  # scale_fill_manual(values =  cbp1) +
+  geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
+  coord_flip() + 
+  theme_linedraw() +
+  theme(legend.position = "none") +
+  ggtitle("Ontario") +
+  xlab("Role") + 
+  ylab("Number of respondents")
+
+### Quebec ######
+Quebec <-filter(survey.x1.x2, Geography %in% "Quebec") %>% 
+  select( Geography, Role) %>%
+  group_by(Role)  %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>%
+  data.frame()
+
+
+Quebec$Role <- factor(Quebec$Role, levels=unique(Quebec$Role))
+
+
+#### Bar graph for Role - Quebec ######
+ggplot(Quebec, aes(x = Role)) +
+  geom_col(aes(y=n, fill=Role)) + 
+  # scale_fill_manual(values =  cbp1) +
+  geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
+  coord_flip() + 
+  theme_linedraw() +
+  theme(legend.position = "none") +
+  ggtitle("Québec") +
+  xlab("Role") + 
+  ylab("Number of respondents")
+
+
+### West ####
+West <-filter(survey.x1.x2, Geography %in% c("Alberta", "British Columbia", "Saskatchewan","Manitoba")) %>% 
+  select( Geography, Role) %>%
+  group_by(Role)  %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>%
+  data.frame()
+
+
+West$Role <- factor(West$Role, levels=unique(West$Role))
+
+
+#### Bar graph for Role - Western Canada ####
+ggplot(West, aes(x = Role)) +
+  geom_col(aes(y=n, fill=Role)) + 
+  # scale_fill_manual(values =  cbp1) +
+  geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
+  coord_flip() + 
+  theme_linedraw() +
+  theme(legend.position = "none") +
+  ggtitle("Western Canada") +
+  xlab("Role") + 
+  ylab("Number of respondents")
+
+
+### East #####
+East <-filter(survey.x1.x2, Geography %in% c("New Brunswick", "Nova Scotia", "Newfoundland and Labrador", "Prince Edward Island")) %>% 
+  select( Geography, Role) %>%
+  group_by(Role)  %>% 
+  summarize(n = n()) %>% 
+  arrange(n) %>%
+  data.frame()
+
+East$Role <- factor(East$Role, levels=unique(East$Role))
+
+
+#### Bar graph for Role - Eastern Canada ####
+ggplot(East, aes(x = Role)) +
+  geom_col(aes(y=n, fill=Role)) + 
+  # scale_fill_manual(values =  cbp1) +
+  geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
+  coord_flip() + 
+  theme_linedraw() +
+  theme(legend.position = "none") +
+  ggtitle("Eastern Canada") +
+  xlab("Role") + 
+  ylab("Number of respondents")
+
+
+### All Provinces ####
+Canada <- filter(survey.x1.x2, !Geography %in% c("National", "Regional", "International")) %>% 
+  group_by(Geography) %>% 
+  summarize(props = n()) %>%   
+  arrange(props) 
+
+Canada$Geography <- factor(Canada$Geography, levels = unique(Canada$Geography))
+
+
+#### Pie chart - All Canada ####
+PieDonut(Canada, aes(Geography, count= props), ratioByGroup = FALSE, showPieName=FALSE, r0=0.25,r1=1,r2=1.4,start=pi/2,labelpositionThreshold=1, showRatioThreshold = F, title= "Respondents by Region", titlesize = 5) #+ 
+  # scale_fill_manual(values =  cbp1)
+
