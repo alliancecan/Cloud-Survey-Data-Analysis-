@@ -255,7 +255,7 @@ PieDonut(Canada, aes(Geography, count= props), ratioByGroup = FALSE, showPieName
 
 # General Survey Questions ############################################################################################
 
-### Q1 ######
+### Q1 - Please describe your role(s). ######
 roles_summary <- 
   survey.x1.x2.no %>% 
   select(-Geography, -Need_to_be_changed, -New_role) %>% 
@@ -273,7 +273,7 @@ PieDonut(roles_summary,
          titlesize = 5)
 
 
-### Q3 ######
+### Q3 - Please choose your research domain ######
 
 Domain_Breakdown <- survey_organized_spread %>% 
   select(Internal.ID, X3) %>% 
@@ -300,6 +300,7 @@ domain_summary <-
   group_by(Domain_n) %>% 
   count()
 
+#### Pie chart - ####
 PieDonut(domain_summary, 
          aes(Domain_n, count= n), 
          ratioByGroup = FALSE, 
@@ -310,5 +311,81 @@ PieDonut(domain_summary,
          title= "Respondents' roles", 
          titlesize = 5)
 
-### Q3 ######
+# Nested Domain-Role
+roles_df <- 
+  survey.x1.x2.no %>% 
+  select(-Geography, -Need_to_be_changed, -New_role, -n)
 
+roles_df$Role[roles_df$Role =="Other (please specify) "] <- "Other"
+
+
+domain_df <- 
+  domain_new_table %>% 
+  select(-Domain)
+
+roles_domain <- 
+  full_join(roles_df, domain_df, by = "Internal.ID")
+
+roles_domain_summary <- 
+  roles_domain %>% 
+  group_by(Role, Domain_n) %>% 
+  count()
+ 
+PieDonut(roles_domain, aes(Role, Domain_n), color= "white",addPieLabel = TRUE, showPieName=F, r0=0.0,r1=0.8,r2=1.4,start=pi/2, showRatioThreshold = F, title= "Breakdown of Respondents by academic position", donutLabelSize = 4, titlesize =6) 
+
+ggplot(roles_domain_summary, aes(fill=Role, y=n, x=Domain_n)) + 
+  geom_bar(position="stack", stat="identity")
+
+### Q4 - Do you currently, or have you in the past, use(d) cloud resources ######
+q4 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X4) %>% 
+  unnest(X4)
+
+q4_summay <- 
+  q4 %>% 
+  group_by(X4) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q4_summay, 
+         aes(X4, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         titlesize = 5)
+
+### Q5 - Please indicate how important these cloud services are to support your research ######
+glimpse(survey_organized_clean)
+
+q5 <- 
+  survey_organized_clean %>% 
+  filter(Ques_num == "X5") %>% 
+  mutate(Ques_num1 = gsub('[.]', '/', q5$Ques))
+
+q5_ord <- 
+  q5 %>% 
+  separate(Ques_num1, 
+           into = c("a", "b"),
+           sep = "//")
+q5_ord <-
+  q5_ord %>% 
+  mutate(b = gsub('[/]', ' ', q5_ord$b)) %>% 
+  select(-a)
+
+q5_ord_cs <- 
+  q5_ord %>% 
+  mutate(cloud_service = ifelse(b =="Alliance Cloud", "Alliance Cloud (formerly Compute Canada Cloud)",
+                                ifelse(b =="International Community Cloud", "International Community Cloud (e.g., EU-based cloud services)",
+                                       ifelse(b =="Amazon Web Services", "Amazon Web Services (AWS)",
+                                              ifelse(b =="Google Cloud Platform", "Google Cloud Platform (GCP)",
+                                                     ifelse(b =="Microsoft Azure", "Microsoft Azure",
+                                                            ifelse(b=="Oracle Cloud","Oracle Cloud",
+                                                            ifelse(b=="Regional cloud offering", "Regional cloud offering (e.g., Calcul Québec Juno Cloud)",
+                                                                   ifelse(b=="Provincial cloud offering", "Provincial cloud offering (e.g.., BCNET EduCloud)",
+                                                                          ifelse(b=="Institutional cloud offering", "Institutional cloud offering", NA))))))))))
+q5_ord_cs <- 
+  q5_ord_cs %>% select(Internal.ID, Question, cloud_service, Answer)
