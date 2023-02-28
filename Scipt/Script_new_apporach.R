@@ -71,8 +71,6 @@ survey_organized_spread <- pivot_wider(survey_organized_clean1,
 # X7 <- survey_organized_spread %>% unnest(X7)
 # x7_x3 <- X7 %>% unnest(X3) %>% select(Respond_ID, X3, X7)
 
-# Demographic of respondents - data prep----------------------------------------------
-
 #Roles and geograpgy
 survey_x1.x2<- 
   survey_organized_spread %>% 
@@ -103,6 +101,25 @@ no <- survey.x1.x2.yes %>%
   count()
 
 sum(no$n) # = 38
+
+### Pie chart - roles
+roles_summary <- 
+  survey.x1.x2.no %>% 
+  select(-Geography, -Need_to_be_changed, -New_role) %>% 
+  group_by(Role) %>% 
+  count()
+
+PieDonut(roles_summary, 
+         aes(Role, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.25,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Respondents' roles", 
+         titlesize = 5) #+ 
+
+# Demography ----------------------------------------------
 
 ###produce nested table: roles per demography
 survey.x1.x2 <- 
@@ -234,4 +251,64 @@ Canada$Geography <- factor(Canada$Geography, levels = unique(Canada$Geography))
 #### Pie chart - All Canada ####
 PieDonut(Canada, aes(Geography, count= props), ratioByGroup = FALSE, showPieName=FALSE, r0=0.25,r1=1,r2=1.4,start=pi/2,labelpositionThreshold=1, showRatioThreshold = F, title= "Respondents by Region", titlesize = 5) #+ 
   # scale_fill_manual(values =  cbp1)
+
+
+# General Survey Questions ############################################################################################
+
+### Q1 ######
+roles_summary <- 
+  survey.x1.x2.no %>% 
+  select(-Geography, -Need_to_be_changed, -New_role) %>% 
+  group_by(Role) %>% 
+  count()
+
+PieDonut(roles_summary, 
+         aes(Role, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.25,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Respondents' roles", 
+         titlesize = 5)
+
+
+### Q3 ######
+
+Domain_Breakdown <- survey_organized_spread %>% 
+  select(Internal.ID, X3) %>% 
+  unnest(X3) %>% 
+  rename(Domain = X3)
+
+#Gather all "others" together:
+domain_new_table <- 
+  Domain_Breakdown %>% 
+  mutate(Domain_n = if_else(Domain == "Natural Sciences ", "Natural Sciences",
+                            if_else(Domain == "Engineering and Technology ", "Engineering and Technology",
+                                    if_else(Domain == "Medical, Health and Life Sciences ", "Medical, Health and\nLife Sciences",
+                                            if_else(Domain == "Agricultural and Veterinary Sciences ", "Agricultural and\n Veterinary Sciences",
+                                                    if_else(Domain == "Social Sciences ", "Social Sciences",
+                                                            if_else(Domain == "Humanities and the Arts ", "Humanities and the Arts", "Other")))))))
+
+#delete extra rows: cells with answer "Other please specify", "N/A", and "unkown"
+domain_new_table <- 
+  domain_new_table %>% 
+  filter(!Domain == "Other (please specify):",!Domain == "N/A",!Domain == "unknown")
+
+domain_summary <- 
+  domain_new_table %>% 
+  group_by(Domain_n) %>% 
+  count()
+
+PieDonut(domain_summary, 
+         aes(Domain_n, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Respondents' roles", 
+         titlesize = 5)
+
+### Q3 ######
 
