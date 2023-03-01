@@ -358,26 +358,28 @@ PieDonut(q4_summay,
          title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
          titlesize = 5)
 
+
 ### Q5 - Please indicate how important these cloud services are to support your research ######
 glimpse(survey_organized_clean)
 
+#First, extract the possible answers in a new column
 q5 <- 
   survey_organized_clean %>% 
   filter(Ques_num == "X5") %>% 
-  mutate(Ques_num1 = gsub('[.]', '/', q5$Ques))
+  mutate(Ques_num1 = gsub('[.]', '/', q5$Ques))#change "." to "//"
 
 q5_ord <- 
   q5 %>% 
   separate(Ques_num1, 
            into = c("a", "b"),
-           sep = "//")
+           sep = "//") #Separate the possible answer from the question
 q5_ord <-
   q5_ord %>% 
-  mutate(b = gsub('[/]', ' ', q5_ord$b)) %>% 
+  mutate(b = gsub('[/]', ' ', q5_ord$b)) %>% #replace "/" by a space
   select(-a)
 
 q5_ord_cs <- 
-  q5_ord %>% 
+  q5_ord %>% #here to add fix answers
   mutate(cloud_service = ifelse(b =="Alliance Cloud", "Alliance Cloud (formerly Compute Canada Cloud)",
                                 ifelse(b =="International Community Cloud", "International Community Cloud (e.g., EU-based cloud services)",
                                        ifelse(b =="Amazon Web Services", "Amazon Web Services (AWS)",
@@ -389,3 +391,157 @@ q5_ord_cs <-
                                                                           ifelse(b=="Institutional cloud offering", "Institutional cloud offering", NA))))))))))
 q5_ord_cs <- 
   q5_ord_cs %>% select(Internal.ID, Question, cloud_service, Answer)
+
+#Add scaling 2 1 0 -1 -2
+q5_ord_cs_clean <- 
+  q5_ord_cs %>% 
+  mutate(Answer_clean = ifelse(Answer == "5 Very important / crucial", 2,ifelse(
+    Answer == "1 Not at all", -2, ifelse(
+      Answer == 4, 1, ifelse(
+        Answer == 3, 0, ifelse(
+          Answer == 2, -1, "?"))))))
+
+q5_ord_cs_clean <- 
+  q5_ord_cs_clean %>% 
+  select(Internal.ID, cloud_service, Answer_clean)
+
+
+#### Add TC3 ####
+# 
+# data <- read.csv("merged_survey_CLEAN.csv") %>% 
+#   select(Research_Domain, TC3) %>% 
+#   unique()
+
+domain_summary$Domain_n[domain_summary$Domain_n == "Agricultural and\n Veterinary Sciences"] <- "Agricultural and Veterinary Sciences"
+domain_summary$Domain_n[domain_summary$Domain_n == "Medical, Health and\nLife Sciences"] <- "Medical, Health and Life Sciences"
+
+domain_summary1 <- 
+  domain_summary %>% 
+  mutate(TC3 = ifelse(Domain_n == "Humanities and the Arts", "SSHRC", ifelse(
+    Domain_n == "Social Sciences", "SSHRC", ifelse(
+      Domain_n == "Medical, Health and Life Sciences", "CIHR", ifelse(
+        Domain_n == "Other", "Other", "NSERC"
+      )
+    )
+  )))
+
+domain_new_table1 <- domain_new_table
+domain_new_table1$Domain_n[domain_new_table1$Domain_n == "Medical, Health and\nLife Sciences"] <- "Medical, Health and Life Sciences"
+domain_new_table1$Domain_n[domain_new_table1$Domain_n == "Agricultural and\n Veterinary Sciences"] <- "Agricultural and Veterinary Sciences"
+
+domain_new_table1 <- 
+  domain_new_table1 %>% 
+  left_join(domain_summary1, by = "Domain_n")
+
+domain.cloud.s <- 
+  q5_ord_cs_clean %>% 
+  left_join(domain_new_table1, by = "Internal.ID") %>% 
+  select(-Domain, -n)
+
+domain.cloud.s$TC3 <- recode_factor(domain.cloud.s$TC3, CIHR = "Health Research", 
+                            NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
+
+domain.cloud.s <- as_tibble(domain.cloud.s)
+
+domain.cloud.s %>% group_by(TC3)
+
+
+
+Workfl <- 
+  domain.cloud.s %>% 
+  select(Internal.ID, cloud_service, Answer_clean, TC3) %>% 
+  rename(cloud = cloud_service, answer = Answer_clean) %>% 
+  group_by(TC3, cloud, answer)%>%
+  summarize(n= n()) %>% 
+  drop_na() %>% 
+  as.tibble()
+
+# Add number of people that answered to each question
+group_n <-
+  Workfl %>% 
+  group_by(TC3, cloud) %>% 
+  summarise(group_n = sum(n)) %>% 
+  as.tibble() %>% 
+  unique()
+
+Workfl1 <- 
+  Workfl %>% 
+  left_join(group_n, by = c("cloud", "TC3"))
+
+
+#add %
+TC3_Needs_sub1 <- mutate(Workfl1, "%" = (n/group_n)*100)
+
+# TC3_Needs_sub$value <- factor(TC3_Needs_sub$value, levels =c("Strongly disagree","Disagree", "Neutral", "Agree", "Strongly agree"), order=T) 
+#Agree is different from Importance, might need to change this
+
+TC3_Needs_sub1 <- arrange(TC3_Needs_sub, TC3, cloud, answer)
+TC3_Needs_sub1 <- TC3_Needs_sub1 %>% 
+  mutate(answer2 = ifelse(answer == 2, "A", ifelse(
+  answer == 1, "B", ifelse(
+    answer == 0, "C", ifelse(
+      answer == -1, "D", "E")))))
+
+
+
+
+### Likert Graph on Cloud importance by TRC ####
+ggplot(TC3_Needs_sub1, aes(x=cloud, y=`%`, fill=answer2))+geom_col()+facet_grid(rows=vars(TC3)) + 
+  scale_fill_manual(values =  likert_color) + 
+  geom_hline(yintercept = 50, linetype="dotted", color = "black", size=.75) +
+  coord_flip() +
+  geom_text(aes(label = round(`%`, digits = 2)), position = position_stack(vjust = .5)) +
+  theme_linedraw(base_size = 18) +
+  ggtitle("Satisfaction with current DRI") +
+  xlab("Needs") + 
+  ylab("") 
+
+
+
+Workfl1 <- 
+  domain.cloud.s %>% 
+  select(Internal.ID, cloud_service, Answer_clean, TC3) %>% 
+  rename(cloud = cloud_service, answer = Answer_clean) 
+
+nHR <- filter(Workfl1, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #84
+nSE <- filter(Workfl1, TC3 == "Sciences and Engineering") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric()#149
+nSSH <- filter(Workfl1, TC3 == "Social Sciences and Humanities") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #88
+nOther <- filter(Workfl1, TC3 == "Other") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+
+Workflow_Health <- filter(Workfl, TC3=="Health Research") %>%
+  group_by(TC3, cloud) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workfl, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, cloud) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workfl, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, cloud) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Other <- filter(Workfl, TC3=="Other") %>%
+  group_by(TC3, cloud) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+### Stacked Bar Graph - Research Workflows by Council ####
+ggplot(Workflow_Tri, aes(x=reorder(cloud,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 2))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "none")
+ggtitle("Activities in Research Workflows") +
+  xlab("") + 
+  ylab("")+
+  fixed_plot_aspect()
