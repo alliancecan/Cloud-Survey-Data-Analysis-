@@ -486,9 +486,7 @@ TC3_Needs_sub1 <-
   TC3_Needs_sub1 %>% 
   mutate(`%` = round(`%`))
 
-#as factor = answer
-
-
+#add as factor = answer
 
 
 ### Likert Graph on Cloud importance by TRC ####
@@ -506,47 +504,8 @@ ggplot(TC3_Needs_sub1, aes(x=cloud, y=`%`, fill=answer2))+geom_col()+facet_grid(
   xlab("Services") + 
   ylab("") 
 
-#subset for not sure + yes
-#subset for not sure + no 
-
-# Workfl1 <- 
-#   domain.cloud.s %>% 
-#   select(Internal.ID, cloud_service, Answer_clean, TC3) %>% 
-#   rename(cloud = cloud_service, answer = Answer_clean) 
-# 
-# nHR <- filter(Workfl1, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #84
-# nSE <- filter(Workfl1, TC3 == "Sciences and Engineering") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric()#149
-# nSSH <- filter(Workfl1, TC3 == "Social Sciences and Humanities") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #88
-# nOther <- filter(Workfl1, TC3 == "Other") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
-# 
-# Workflow_Health <- filter(Workfl, TC3=="Health Research") %>%
-#   group_by(TC3, cloud) %>%
-#   summarize(n = n()) %>%
-#   arrange(desc(n),.by_group = T) %>%
-#   mutate('%' = (n / nHR)*100)
-# 
-# Workflow_SciEng <- filter(Workfl, TC3=="Sciences and Engineering") %>%
-#   group_by(TC3, cloud) %>%
-#   summarize(n = n()) %>%
-#   arrange(desc(n),.by_group = T) %>%
-#   mutate('%' = (n / nSE)*100)
-# 
-# Workflow_SSH <- filter(Workfl, TC3=="Social Sciences and Humanities") %>%
-#   group_by(TC3, cloud) %>%
-#   summarize(n = n()) %>%
-#   arrange(desc(n),.by_group = T) %>%
-#   mutate('%' = (n / nSSH)*100) 
-# 
-# Workflow_Other <- filter(Workfl, TC3=="Other") %>%
-#   group_by(TC3, cloud) %>%
-#   summarize(n = n()) %>%
-#   arrange(desc(n),.by_group = T) %>%
-#   mutate('%' = (n / nSSH)*100) 
-# 
-# Workflow_Tri <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
-
 ### Q7 - For what purpose(s) do you use cloud services to support your research? ######
-#### data cleaning - preparation ####
+#### data cleaning & preparation ####
 
 glimpse(survey_organized_clean)
 
@@ -560,6 +519,11 @@ q7 <- survey_organized_spread %>%
 domain <- 
   domain_new_table1 %>% 
   select(-Domain, -n, -Domain_n)
+
+domain$TC3 <- 
+  recode_factor(domain$TC3, CIHR = "Health Research", 
+                NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
+
 
 #Organize q7 by adding all "other" answers together
 q7_orga <- 
@@ -597,8 +561,55 @@ q7.domain <-
   q7_orga %>% 
   left_join(domain, by = "Internal.ID") %>% 
   select(-purpose) %>% 
-  print()
+  print() ## n = 277
 
 
+Workflow.q7 <- q7.domain
 
-#
+nHR <- filter(Workflow.q7, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #83
+nSE <- filter(Workflow.q7, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#144
+nSSH <- filter(Workflow.q7, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #89
+nOther <- filter(Workflow.q7, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+
+
+Workflow_Health <- filter(Workflow.q7, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q7, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q7, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Other <- filter(Workflow.q7, TC3=="Other") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+
+Workflow_Tri1 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+### Stacked Bar Graph on Cloud uses by TRC ####
+cbp1 <- rep(c("#999999", "#E69F00", "#56B4E9", "#009E73",
+                       "#F0E442", "#0072B2", "#D55E00", "#CC79A7"), 100)
+                       
+ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "none")
+ggtitle("Use of cloud services") +
+  xlab("") + 
+  ylab("Use of cloud services")+
+  fixed_plot_aspect()
