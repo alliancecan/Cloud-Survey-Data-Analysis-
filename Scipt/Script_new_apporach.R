@@ -482,66 +482,123 @@ TC3_Needs_sub1 <- TC3_Needs_sub1 %>%
     answer == 0, "C", ifelse(
       answer == -1, "D", "E")))))
 
+TC3_Needs_sub1 <- 
+  TC3_Needs_sub1 %>% 
+  mutate(`%` = round(`%`))
+
+#as factor = answer
+
 
 
 
 ### Likert Graph on Cloud importance by TRC ####
+likert_color <- c("#B2182B","#F4A582", "#d3d3d3","#92C5DE","#2166AC" )
+likert_color <- c("#2166AC", "#92C5DE", "#d3d3d3","#F4A582", "#B2182B")
+
+
 ggplot(TC3_Needs_sub1, aes(x=cloud, y=`%`, fill=answer2))+geom_col()+facet_grid(rows=vars(TC3)) + 
   scale_fill_manual(values =  likert_color) + 
   geom_hline(yintercept = 50, linetype="dotted", color = "black", size=.75) +
   coord_flip() +
   geom_text(aes(label = round(`%`, digits = 2)), position = position_stack(vjust = .5)) +
   theme_linedraw(base_size = 18) +
-  ggtitle("Satisfaction with current DRI") +
-  xlab("Needs") + 
+  ggtitle("Importance of cloud service to support research") +
+  xlab("Services") + 
   ylab("") 
 
+#subset for not sure + yes
+#subset for not sure + no 
+
+# Workfl1 <- 
+#   domain.cloud.s %>% 
+#   select(Internal.ID, cloud_service, Answer_clean, TC3) %>% 
+#   rename(cloud = cloud_service, answer = Answer_clean) 
+# 
+# nHR <- filter(Workfl1, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #84
+# nSE <- filter(Workfl1, TC3 == "Sciences and Engineering") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric()#149
+# nSSH <- filter(Workfl1, TC3 == "Social Sciences and Humanities") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #88
+# nOther <- filter(Workfl1, TC3 == "Other") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+# 
+# Workflow_Health <- filter(Workfl, TC3=="Health Research") %>%
+#   group_by(TC3, cloud) %>%
+#   summarize(n = n()) %>%
+#   arrange(desc(n),.by_group = T) %>%
+#   mutate('%' = (n / nHR)*100)
+# 
+# Workflow_SciEng <- filter(Workfl, TC3=="Sciences and Engineering") %>%
+#   group_by(TC3, cloud) %>%
+#   summarize(n = n()) %>%
+#   arrange(desc(n),.by_group = T) %>%
+#   mutate('%' = (n / nSE)*100)
+# 
+# Workflow_SSH <- filter(Workfl, TC3=="Social Sciences and Humanities") %>%
+#   group_by(TC3, cloud) %>%
+#   summarize(n = n()) %>%
+#   arrange(desc(n),.by_group = T) %>%
+#   mutate('%' = (n / nSSH)*100) 
+# 
+# Workflow_Other <- filter(Workfl, TC3=="Other") %>%
+#   group_by(TC3, cloud) %>%
+#   summarize(n = n()) %>%
+#   arrange(desc(n),.by_group = T) %>%
+#   mutate('%' = (n / nSSH)*100) 
+# 
+# Workflow_Tri <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+### Q7 - For what purpose(s) do you use cloud services to support your research? ######
+#### data cleaning - preparation ####
+
+glimpse(survey_organized_clean)
+
+#extract question 7
+q7 <- survey_organized_spread %>% 
+  select(Internal.ID, X7) %>% 
+  unnest(X7) %>% 
+  rename(purpose = X7)
+
+#Create a table with domain for TC3 by ID
+domain <- 
+  domain_new_table1 %>% 
+  select(-Domain, -n, -Domain_n)
+
+#Organize q7 by adding all "other" answers together
+q7_orga <- 
+  q7 %>% 
+  mutate(answer =
+           ifelse(purpose == "Cloud storage (i.e., OneDrive, Dropbox, Google Drive, Sync, etc.)", "Cloud storage", ifelse(
+             purpose == "High-performance computing capabilities", purpose, ifelse(
+               purpose == "Analysis", purpose, ifelse(
+                 purpose == "Accessing cloud-based software", purpose, ifelse(
+                   purpose == "Interactive computing", purpose, ifelse(
+                     purpose == "Object storage ", "Object storage", ifelse(
+                       purpose == "Accessing specialized hardware ", "Accessing specialized hardware", ifelse(
+                         purpose == "SaaS (Software as a Service)", purpose, ifelse(
+                           purpose == "PaaS (Platform as a Service)", purpose, ifelse(
+                             purpose == "IaaS (Infrastructure as a Service)", purpose, ifelse(
+                               purpose == "Other (please specify): ", "delete", "Other"
+                               ))))))))))))
+  
+#delete "Other (please specify)" = changed into delete in previous function
+q7_orga <- 
+  q7_orga %>% 
+  filter(!answer == "delete")
+
+#summarize the data
+q7_summary <- 
+  q7_orga %>% 
+  group_by(answer) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
 
 
-Workfl1 <- 
-  domain.cloud.s %>% 
-  select(Internal.ID, cloud_service, Answer_clean, TC3) %>% 
-  rename(cloud = cloud_service, answer = Answer_clean) 
+#link TC3 to q7 IDs
+q7.domain <- 
+  q7_orga %>% 
+  left_join(domain, by = "Internal.ID") %>% 
+  select(-purpose) %>% 
+  print()
 
-nHR <- filter(Workfl1, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #84
-nSE <- filter(Workfl1, TC3 == "Sciences and Engineering") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric()#149
-nSSH <- filter(Workfl1, TC3 == "Social Sciences and Humanities") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #88
-nOther <- filter(Workfl1, TC3 == "Other") %>% select( Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
 
-Workflow_Health <- filter(Workfl, TC3=="Health Research") %>%
-  group_by(TC3, cloud) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nHR)*100)
 
-Workflow_SciEng <- filter(Workfl, TC3=="Sciences and Engineering") %>%
-  group_by(TC3, cloud) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSE)*100)
-
-Workflow_SSH <- filter(Workfl, TC3=="Social Sciences and Humanities") %>%
-  group_by(TC3, cloud) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
-
-Workflow_Other <- filter(Workfl, TC3=="Other") %>%
-  group_by(TC3, cloud) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
-
-Workflow_Tri <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
-
-### Stacked Bar Graph - Research Workflows by Council ####
-ggplot(Workflow_Tri, aes(x=reorder(cloud,`%`))) + 
-  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
-  scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 2))) +
-  theme_linedraw(base_size = 18) +
-  theme(legend.position = "none")
-ggtitle("Activities in Research Workflows") +
-  xlab("") + 
-  ylab("")+
-  fixed_plot_aspect()
+#
