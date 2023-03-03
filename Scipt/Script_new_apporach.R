@@ -566,6 +566,11 @@ q7.domain <-
 
 Workflow.q7 <- q7.domain
 
+Workflow.q7 <- 
+  q7.domain %>% 
+  mutate(TC3 = replace_na(Workflow.q7$TC3, "Other")) %>% 
+  unique()
+
 nHR <- filter(Workflow.q7, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #83
 nSE <- filter(Workflow.q7, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#144
 nSSH <- filter(Workflow.q7, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #89
@@ -608,8 +613,220 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "none")
+  theme(legend.position = "none")+
 ggtitle("Use of cloud services") +
   xlab("") + 
-  ylab("Use of cloud services")+
+  ylab("Use of cloud services")
   fixed_plot_aspect()
+
+### Q9 - Which method(s) of interacting with cloud resources are you familiar with? ######
+#### data cleaning & preparation ####
+
+glimpse(survey_organized_clean)
+
+#extract question 7
+q9 <- survey_organized_spread %>% 
+  select(Internal.ID, X9) %>% 
+  unnest(X9) %>% 
+  rename(method = X9) # n = 278
+
+#Create a table with domain for TC3 by ID
+domain # n = 366
+
+#Organize q7 by adding all "other" answers together
+q9_orga <- 
+  q9 %>% 
+  mutate(answer =
+           ifelse(method == "A remote connection to a Graphical desktop (e.g., virtual desktop, remote desktop, etc)", "A remote connection to a Graphical desktop", ifelse(
+             method == "Software (e.g., OneDrive, Dropbox, Google Drive, Sync, Jupyter, etc.,)", "Software", ifelse(
+               method == "Web browser", method, ifelse(
+                 method == "SSH connection and/or terminal", method, ifelse(
+                   method == "API (code-level access for applications)", "API" , ifelse(
+                     method == "Other (please specify):","delete" , ifelse(
+                       method == "Not sure", method, "delete")))))))) # the last "delete" is to delete "not applicable"
+
+#delete "Other (please specify)" = changed into delete in previous function
+q9_orga <- 
+  q9_orga %>% 
+  filter(!answer == "delete")
+
+#summarize the data
+q9_summary <- 
+  q9_orga %>% 
+  group_by(answer) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+
+#link TC3 to q7 IDs
+q9.domain <- 
+  q9_orga %>% 
+  left_join(domain, by = "Internal.ID") %>% 
+  select(-method) %>% 
+  print() ## n = 277
+
+
+Workflow.q9 <- 
+  q9.domain %>% 
+  mutate(TC3 = replace_na(Workflow.q9$TC3, "Other")) %>% 
+  unique()
+#25362061
+
+# v <- Workflow.q9 %>% filter(answer == "Software") %>% 
+#   filter(TC3 == "Social Sciences and Humanities") 
+
+
+nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #83
+nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#142
+nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #87
+nOther <- filter(Workflow.q9, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+
+
+Workflow_Health <- filter(Workflow.q9, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q9, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q9, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Other <- filter(Workflow.q9, TC3=="Other") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+
+Workflow_Tri2 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+### Stacked Bar Graph on Cloud uses by TRC ####
+
+ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "none")+
+ggtitle("Use of cloud services") +
+  xlab("Usage") + 
+  ylab("Percentage")
+  fixed_plot_aspect()
+
+### Q10 - What factors do you consider in choosing which cloud platform to use (Alliance or commercial)? ######
+#### data cleaning & preparation ####
+  
+  glimpse(survey_organized_clean)
+  
+  #extract question 7
+  q10 <- survey_organized_spread %>% 
+    select(Internal.ID, X10) %>% 
+    unnest(X10) %>% 
+    rename(factor = X10) # n = 278
+  
+  #Create a table with domain for TC3 by ID
+  domain # n = 366
+  
+  #Organize q7 by adding all "other" answers together
+  q10_orga <- 
+    q10 %>% 
+    mutate(answer =
+             ifelse(factor == "Ease of use ", "Ease of use", ifelse(
+               factor == "Cost ", "Cost", ifelse(
+                 factor == "Scalability ", "Scalability", ifelse(
+                   factor == "Other (please specify): ", "delete", ifelse(
+                     factor == "Vendor-agnostic features ", "Vendor-agnostic features" , ifelse(
+                       factor == "security","Privacy and security" , ifelse(
+                         factor == "privacy and security", "Privacy and security", ifelse(
+                           factor == 
+                         ))))))))) # the last "delete" is to delete "not applicable"
+  
+  #delete "Other (please specify)" = changed into delete in previous function
+  q10_orga <- 
+    q10_orga %>% 
+    filter(!answer == "delete")
+  
+  #summarize the data
+  q10_summary <- 
+    q10_orga %>% 
+    group_by(answer) %>% 
+    count() %>% 
+    arrange(-n) %>% 
+    print()
+  
+  
+  #link TC3 to q7 IDs
+  q10.domain <- 
+    q10_orga %>% 
+    left_join(domain, by = "Internal.ID") %>% 
+    select(-factor) %>% 
+    print() ## n = 277
+  
+  
+  Workflow.q10 <- 
+    q10.domain %>% 
+    mutate(TC3 = replace_na(Workflow.q10$TC3, "Other")) %>% 
+    unique()
+  #25362061
+  
+  # v <- Workflow.q10 %>% filter(answer == "Software") %>% 
+  #   filter(TC3 == "Social Sciences and Humanities") 
+  
+  
+  nHR <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #83
+  nSE <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#142
+  nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #87
+  nOther <- filter(Workflow.q10, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+  
+  
+  Workflow_Health <- filter(Workflow.q10, TC3=="Health Research") %>%
+    group_by(TC3, answer) %>%
+    summarize(n = n()) %>%
+    arrange(desc(n),.by_group = T) %>%
+    mutate('%' = (n / nHR)*100)
+  
+  Workflow_SciEng <- filter(Workflow.q10, TC3=="Sciences and Engineering") %>%
+    group_by(TC3, answer) %>%
+    summarize(n = n()) %>%
+    arrange(desc(n),.by_group = T) %>%
+    mutate('%' = (n / nSE)*100)
+  
+  Workflow_SSH <- filter(Workflow.q10, TC3=="Social Sciences and Humanities") %>%
+    group_by(TC3, answer) %>%
+    summarize(n = n()) %>%
+    arrange(desc(n),.by_group = T) %>%
+    mutate('%' = (n / nSSH)*100) 
+  
+  Workflow_Other <- filter(Workflow.q10, TC3=="Other") %>%
+    group_by(TC3, answer) %>%
+    summarize(n = n()) %>%
+    arrange(desc(n),.by_group = T) %>%
+    mutate('%' = (n / nSSH)*100) 
+  
+  
+  Workflow_Tri2 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+  
+  ### Stacked Bar Graph on Cloud uses by TRC ####
+  
+  ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) + 
+    geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+    scale_fill_manual(values =  cbp1) + 
+    coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+    theme_linedraw(base_size = 18) +
+    theme(legend.position = "none")+
+    ggtitle("Use of cloud services") +
+    xlab("Usage") + 
+    ylab("Percentage")
+  fixed_plot_aspect()
+  
+  
