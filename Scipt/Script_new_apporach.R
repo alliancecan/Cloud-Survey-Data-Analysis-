@@ -255,13 +255,9 @@ Domain_Breakdown <- survey_organized_spread %>%
   unnest(X3) %>% 
   rename(Domain = X3)
 
-#Gather all "others" together:
-domain_new_table <- 
-  Domain_Breakdown 
-
 #### summary table - Domain ####
 domain_summary <- 
-  domain_new_table %>% 
+  Domain_Breakdown %>% 
   group_by(Domain) %>% 
   count() %>% 
   arrange(-n) %>% 
@@ -298,7 +294,7 @@ roles_domain_summary <-
 #This piechart is a mess
 # PieDonut(roles_domain, aes(Role_n, Domain_n), color= "white",addPieLabel = TRUE, showPieName=F, r0=0.0,r1=0.8,r2=1.4,start=pi/2, showRatioThreshold = F, title= "Breakdown of Respondents by academic position", donutLabelSize = 4, titlesize =6) 
 
-ggplot(roles_domain_summary, aes(fill=Role_n, y=n, x=Domain_n)) + 
+ggplot(roles_domain_summary, aes(fill=Role_n, y=n, x=Domain)) + 
   geom_bar(position="stack", stat="identity")
 
 ### Q4 - Do you currently, or have you in the past, use(d) cloud resources ######
@@ -385,46 +381,38 @@ q5_ord_cs_clean <-
 
 #### Add TC3 ####
 # 
-
-#delete "\n" that was used to one can read the TC3 on the piechart on Q3
-domain_summary$Domain_n[domain_summary$Domain_n == "Agricultural and\n Veterinary Sciences"] <- "Agricultural and Veterinary Sciences"
-domain_summary$Domain_n[domain_summary$Domain_n == "Medical, Health and\nLife Sciences"] <- "Medical, Health and Life Sciences"
+# 
+# #delete "\n" that was used to one can read the TC3 on the piechart on Q3
+# domain_summary$Domain[domain_summary$Domain == "Agricultural and\n Veterinary Sciences"] <- "Agricultural and Veterinary Sciences"
+# domain_summary$Domain[domain_summary$Domain == "Medical, Health and\nLife Sciences"] <- "Medical, Health and Life Sciences"
 
 #add the TC3
+
 domain_summary1 <- 
   domain_summary %>% 
-  mutate(TC3 = ifelse(Domain_n == "Humanities and the Arts", "SSHRC", ifelse(
-    Domain_n == "Social Sciences", "SSHRC", ifelse(
-      Domain_n == "Medical, Health and Life Sciences", "CIHR", ifelse(
-        Domain_n == "Other", "Other", "NSERC"
-      )
-    )
-  ))) #From the total n,
+  mutate(TC3 = ifelse( Domain == "Natural Sciences ", "CIHR", ifelse(
+    Domain == "Humanities and the Arts", "SSHRC", ifelse(
+      Domain == "Social Sciences ", "SSHRC", ifelse(
+        Domain == "Engineering and Technology ", "SSHRC", ifelse(
+          Domain == "Medical, Health and Life Sciences ", "CIHR", "NSERC"
+      ))))))
 
-#Fix the names of the domains
-domain_new_table1 <- domain_new_table
-domain_new_table1$Domain_n[domain_new_table1$Domain_n == "Medical, Health and\nLife Sciences"] <- "Medical, Health and Life Sciences"
-domain_new_table1$Domain_n[domain_new_table1$Domain_n == "Agricultural and\n Veterinary Sciences"] <- "Agricultural and Veterinary Sciences"
-
-#join the domain summary table to the domain table = domain table contains the total n per domain
+#join the domain summary table to the domain table = domain_summary1 contains the total n per domain
 domain_new_table1 <- 
-  domain_new_table1 %>% 
-  left_join(domain_summary1, by = "Domain_n")
+  domain_new_table %>% 
+  left_join(domain_summary1, by = "Domain")
 
 
 domain.cloud.s <- 
   q5_ord_cs_clean %>% 
   left_join(domain_new_table1, by = "Internal.ID") %>% 
-  select(-Domain, -n)
+  select(-n)
 
-domain.cloud.s$TC3 <- recode_factor(domain.cloud.s$TC3, CIHR = "Health Research", 
-                            NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
+#Not sure if this need to be reused as Domain column has been cleaned. try: "unique(domain.cloud.s$Domain)" = 7 unique domains vs three in the next function
+# domain.cloud.s$TC3 <- recode_factor(domain.cloud.s$TC3, CIHR = "Health Research",
+#                             NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
 
 domain.cloud.s <- as_tibble(domain.cloud.s)
-
-domain.cloud.s %>% group_by(TC3)
-
-
 
 Workfl <- 
   domain.cloud.s %>% 
@@ -433,7 +421,8 @@ Workfl <-
   group_by(TC3, cloud, answer)%>%
   summarize(n= n()) %>% 
   drop_na() %>% 
-  as.tibble()
+  as.tibble() %>% 
+  print()
 
 # Add number of people that answered to each question
 group_n <-
@@ -441,7 +430,8 @@ group_n <-
   group_by(TC3, cloud) %>% 
   summarise(group_n = sum(n)) %>% 
   as.tibble() %>% 
-  unique()
+  unique() %>% 
+  print()
 
 Workfl1 <- 
   Workfl %>% 
@@ -450,9 +440,6 @@ Workfl1 <-
 
 #add %
 TC3_Needs_sub <- mutate(Workfl1, "%" = (n/group_n)*100)
-
-# TC3_Needs_sub$value <- factor(TC3_Needs_sub$value, levels =c("Strongly disagree","Disagree", "Neutral", "Agree", "Strongly agree"), order=T) 
-#Agree is different from Importance, might need to change this
 
 #Need to replace A, B, D, D and E
 TC3_Needs_sub1 <- arrange(TC3_Needs_sub, TC3, cloud, answer)
@@ -496,10 +483,12 @@ q7 <- survey_organized_spread %>%
 #Create a table with domain for TC3 by ID
 domain <- 
   domain_new_table1 %>% 
-  select(-Domain, -n, -Domain_n)
+  select(-Domain, -n)
 
-domain$TC3 <- 
-  recode_factor(domain$TC3, CIHR = "Health Research", 
+domain1 <- domain
+
+domain1$TC3 <-
+  recode_factor(domain1$TC3, CIHR = "Health Research",
                 NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
 
 
@@ -517,7 +506,7 @@ q7_orga <-
                        purpose == "Accessing specialized hardware ", "Accessing specialized hardware", ifelse(
                          purpose == "SaaS (Software as a Service)", purpose, ifelse(
                            purpose == "PaaS (Platform as a Service)", purpose, ifelse(
-                             purpose == "IaaS (Infrastructure as a Service)", purpose, "Other"
+                             purpose == "IaaS (Infrastructure as a Service)", purpose, "Other" #Here I'm not sure if there is a cleaned column for "other (please specify)"
                                )))))))))))
 
 #summarize the data
@@ -532,7 +521,7 @@ q7_summary <-
 #link TC3 to q7 IDs
 q7.domain <- 
   q7_orga %>% 
-  left_join(domain, by = "Internal.ID") %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
   select(-purpose) %>% 
   print() ## n = 362 = unique(Internal.ID)
 
@@ -544,10 +533,10 @@ Workflow.q7 <-
   mutate(TC3 = replace_na(Workflow.q7$TC3, "Other")) %>% 
   unique()
 
-nHR <- filter(Workflow.q7, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
-nSE <- filter(Workflow.q7, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#193
-nSSH <- filter(Workflow.q7, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #104
-nOther <- filter(Workflow.q7, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #27
+nHR <- filter(Workflow.q7, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #202
+nSE <- filter(Workflow.q7, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#66
+nSSH <- filter(Workflow.q7, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #165
+
 
 
 Workflow_Health <- filter(Workflow.q7, TC3=="Health Research") %>%
@@ -567,13 +556,6 @@ Workflow_SSH <- filter(Workflow.q7, TC3=="Social Sciences and Humanities") %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSSH)*100) 
-
-Workflow_Other <- filter(Workflow.q7, TC3=="Other") %>%
-  group_by(TC3, answer) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
-
 
 Workflow_Tri1 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
 
