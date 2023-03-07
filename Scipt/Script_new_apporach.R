@@ -29,7 +29,7 @@ survey <- read.csv("FINAL_Cloud_Survey_EN-FR_20220228.csv",
                    encoding = "UTF-8",
                    na.strings=c("","NA"))
 
-survey <- survey[c(-10,-12)] # delete columns "Other" and old "old please specify" to keep "new added by Felipe"
+survey <- survey[c(-10,-12, -20, -21)] #delete columns "Other" and old "old please specify" have been reclassified into the "NEW_Other" column
 
 #Questions
 questions_n <- read.csv("Questions_n_EN_20230223.csv")#this table has the questions in rows (n=47)
@@ -243,6 +243,7 @@ Canada$Geography <- factor(Canada$Geography, levels = unique(Canada$Geography))
 
 
 #### Pie chart - All Canada ####
+#Comment: group ester provinces
 PieDonut(Canada, aes(Geography, count= props), ratioByGroup = FALSE, showPieName=FALSE, r0=0.25,r1=1,r2=1.4,start=pi/2,labelpositionThreshold=1, showRatioThreshold = F, title= "Respondents by Region", titlesize = 5) #+ 
   # scale_fill_manual(values =  cbp1)
 
@@ -256,40 +257,19 @@ Domain_Breakdown <- survey_organized_spread %>%
 
 #Gather all "others" together:
 domain_new_table <- 
-  Domain_Breakdown %>% 
-  mutate(Domain_n = if_else(Domain == "Natural Sciences ", "Natural Sciences",if_else(
-    Domain == "Engineering and Technology ", "Engineering and Technology",
-                                    if_else(Domain == "Medical, Health and Life Sciences ", "Medical, Health and\nLife Sciences",
-                                            if_else(Domain == "Agricultural and Veterinary Sciences ", "Agricultural and\n Veterinary Sciences",
-                                                    if_else(Domain == "Social Sciences ", "Social Sciences",
-                                                            if_else(Domain == "Humanities and the Arts ", "Humanities and the Arts", ifelse(
-                                                              Domain == "kinesiology", "Medical, Health and\nLife Sciences", ifelse(
-                                                                Domain == "Education", "Social Sciences", ifelse(
-                                                                  Domain == "Astronomy", "Natural Sciences", ifelse(
-                                                                    Domain == "Other", "Delete", ifelse(
-                                                                      Domain == "N/A", "Delete", ifelse(
-                                                                        Domain == "unknown", "Delete", "Other"
-                                                                      )
-                                                                    )
-                                                                  )
-                                                            ))))))))))
-
-#delete extra rows: cells with answer "Other please specify", "N/A", and "unkown"
-domain_new_table <- 
-  domain_new_table %>% 
-  filter(!Domain_n == "Delete")
+  Domain_Breakdown 
 
 #### summary table - Domain ####
 domain_summary <- 
   domain_new_table %>% 
-  group_by(Domain_n) %>% 
+  group_by(Domain) %>% 
   count() %>% 
   arrange(-n) %>% 
   print()
 
 #### Pie chart - ####
 PieDonut(domain_summary, 
-         aes(Domain_n, count= n), 
+         aes(Domain, count= n), 
          ratioByGroup = FALSE, 
          showPieName=FALSE, 
          r0=0.0,r1=1,r2=1.4,start=pi/2,
@@ -304,17 +284,13 @@ roles_df <-
   select(-Geography, -Role,) %>% #select ony roles and ID
   unique()
 
-
-domain_df <- 
-  domain_new_table %>% 
-  select(-Domain)#keep cleaned "domain_n" column
-
+#join roles and domains based on the IDs
 roles_domain <- 
-  full_join(roles_df, domain_df, by = "Internal.ID")
+  full_join(roles_df, domain_new_table, by = "Internal.ID")
 
 roles_domain_summary <- 
   roles_domain %>% 
-  group_by(Role_n, Domain_n) %>% 
+  group_by(Role_n, Domain) %>% 
   count() %>% 
   arrange(-n) %>% 
   print()
@@ -669,10 +645,10 @@ Workflow.q9 <-
   q9.domain %>% 
   unique()
 
-nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #83
-nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#142
-nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #87
-nOther <- filter(Workflow.q9, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #113
+nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#192
+nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #103
+nOther <- filter(Workflow.q9, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #20
 
 
 Workflow_Health <- filter(Workflow.q9, TC3=="Health Research") %>%
@@ -713,7 +689,7 @@ ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) +
 ggtitle("Use of cloud services") +
   xlab("Usage") + 
   ylab("Percentage")
-  fixed_plot_aspect()
+  # fixed_plot_aspect()
 
 ### Q10 - What factors do you consider in choosing which cloud platform to use (Alliance or commercial)? ######
 #### data cleaning & preparation ####
@@ -731,12 +707,12 @@ ggtitle("Use of cloud services") +
   
   #Organize q7 by adding all "other" answers together
   q10_orga <- 
-    q10 %>% 
+    q10 %>%
+    filter(!factor == "Other") %>% 
     mutate(answer =
              ifelse(factor == "Ease of use ", "Ease of use", ifelse(
                factor == "Cost ", "Cost", ifelse(
                  factor == "Scalability ", "Scalability", ifelse(
-                   factor == "Other (please specify): ", "delete", ifelse(
                      factor == "Vendor-agnostic features ", "Vendor-agnostic features" , ifelse(
                        factor == "security","Privacy and security" , ifelse(
                          factor == "privacy and security", "Privacy and security", ifelse(
@@ -751,12 +727,8 @@ ggtitle("Use of cloud services") +
                                            factor == "Security standards", "Privacy and security", ifelse(
                                              factor == "Security for sensitive health data", "Privacy and security", ifelse(
                                                factor == "Security and the ethics of the corporation producing it. If you're pushing the WEF agenda, take a hike.", "Privacy and security", "Other"
-                                             ))))))))))))))))))) # the last "delete" is to delete "not applicable"
+                                             )))))))))))))))))) # the last "delete" is to delete "not applicable"
   
-  #delete "Other (please specify)" = changed into delete in previous function
-  q10_orga <- 
-    q10_orga %>% 
-    filter(!answer == "delete")
   
   #summarize the data
   q10_summary <- 
@@ -772,23 +744,18 @@ ggtitle("Use of cloud services") +
     q10_orga %>% 
     left_join(domain, by = "Internal.ID") %>% 
     select(-factor) %>% 
-    print() ## n = 277
+    print() ## n = 356
   
   
   Workflow.q10 <- 
     q10.domain %>% 
-    mutate(TC3 = replace_na(Workflow.q10$TC3, "Other")) %>% 
     unique()
-  #25362061
-  
-  # v <- Workflow.q10 %>% filter(answer == "Software") %>% 
-  #   filter(TC3 == "Social Sciences and Humanities") 
   
   
-  nHR <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #83
-  nSE <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#142
-  nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #87
-  nOther <- filter(Workflow.q10, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #13
+  nHR <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
+  nSE <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
+  nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #105
+  nOther <- filter(Workflow.q10, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #19
   
   
   Workflow_Health <- filter(Workflow.q10, TC3=="Health Research") %>%
@@ -830,5 +797,134 @@ ggtitle("Use of cloud services") +
     xlab("Usage") + 
     ylab("Percentage")
   fixed_plot_aspect()
+
+### Q11 - Do your cloud needs include storing or processing controlled or sensitive data (e.g., data owned by First Nations, personal data, data subject to a data sharing agreement or specific security requirements)?? ######
+q11 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X11) %>% 
+  unnest(X11)
+  
+q11_summay <- 
+  q11 %>% 
+  group_by(X11) %>% 
+  count()
+  
+#### Pie chart ####
+PieDonut(q11_summay, 
+           aes(X11, count= n), 
+           ratioByGroup = FALSE, 
+           showPieName=FALSE, 
+           r0=0.0,r1=1,r2=1.4,start=pi/2,
+           labelpositionThreshold=1, 
+           showRatioThreshold = F, 
+           title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+           titlesize = 5)
   
   
+  
+### Q12 - Have you used a commercial cloud provider?? ######
+q12 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X12) %>% 
+  unnest(X12)
+
+q12_summay <- 
+  q12 %>% 
+  group_by(X12) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q12_summay, 
+         aes(X12, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         titlesize = 5)
+
+
+
+### Q13 - HApproximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
+q13 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X13) %>% 
+  unnest(X13) # n = 218
+
+q13_org <- 
+  q13 %>% 
+  mutate(credits = ifelse(
+    X13 == "$0 ","$0", X13))
+
+q13_summay <- 
+  q13_org %>% 
+  group_by(credits) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print() # n = 218
+
+#Link it to the TC3 = data is "domain_new_table"
+
+q13_org_domain <- 
+  q13_org %>% 
+  left_join(domain_new_table, by = "Internal.ID") %>% 
+  select(-X13, -Domain)
+
+
+q13_org_domain_summary <- 
+  q13_org_domain %>% 
+  group_by(credits, Domain_n) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+#### plot ####
+ggplot(q13_org_domain_summary, aes(fill=Domain_n, y=n, x=credits)) + 
+  geom_bar(position="stack", stat="identity") #A comment, we should change "NA" in "Domain" into "Not specified", something like that
+
+
+### Q14 - HApproximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
+q14 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X14) %>% 
+  unnest(X14) # n = 218
+
+q14_org <- 
+  q14 %>% 
+  mutate(credits = ifelse(
+    X14 == "$0 ","$0", X14))
+
+q14_summay <- 
+  q14_org %>% 
+  group_by(credits) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print() # n = 218
+
+#Link it to the TC3 = data is "domain_new_table"
+
+q14_org_domain <- 
+  q14_org %>% 
+  left_join(domain_new_table, by = "Internal.ID") %>% 
+  select(-X14, -Domain)
+
+
+q14_org_domain_summary <- 
+  q14_org_domain %>% 
+  group_by(credits, Domain_n) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+#### plot ####
+ggplot(q14_org_domain_summary, aes(fill=Domain_n, y=n, x=credits)) + 
+  geom_bar(position="stack", stat="identity") #A comment, we should change "NA" in "Domain" into "Not specified", something like that
+
+
+### Q15 - How is your commercial cloud budget funded? ######
+q15 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X15) %>% 
+  unnest(X15) # n = 218
+
