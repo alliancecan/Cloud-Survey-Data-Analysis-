@@ -557,7 +557,7 @@ Workflow_SSH <- filter(Workflow.q7, TC3=="Social Sciences and Humanities") %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSSH)*100) 
 
-Workflow_Tri1 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
 
 ### Stacked Bar Graph on Cloud uses by TRC ####
 cbp1 <- rep(c("#999999", "#E69F00", "#56B4E9", "#009E73",
@@ -583,15 +583,15 @@ glimpse(survey_organized_clean)
 q9 <- survey_organized_spread %>% 
   select(Internal.ID, X9) %>% 
   unnest(X9) %>% 
-  rename(method = X9) # n = 278
+  rename(method = X9) # n = 363
 
 #Create a table with domain for TC3 by ID
-domain # n = 481 = unique(Internal.ID)
+domain1 # n = 474 = unique(Internal.ID)
 
 #Organize q7 by adding all "other" answers together
 q9_orga <- 
   q9 %>% 
-  filter(!method == "Other") %>% #Delete other
+  filter(!method == "Other") %>% #Delete other - but if "other" is a new added answer by F, then delete this line
   mutate(answer =
            ifelse(method == "A remote connection to a Graphical desktop (e.g., virtual desktop, remote desktop, etc)", "A remote connection to a Graphical desktop", ifelse(
              method == "Software (e.g., OneDrive, Dropbox, Google Drive, Sync, Jupyter, etc.,)", "Software", ifelse(
@@ -601,7 +601,7 @@ q9_orga <-
                      method == "Not applicable",method , ifelse(
                        method == "Not sure", method, "Other")))))))) # the last "delete" is to delete "not applicable"
 
-#delete "Other (please specify)" = changed into delete in previous function
+#delete "Not applicable"
 q9_orga <- 
   q9_orga %>% 
   filter(!answer == "Not applicable")
@@ -618,7 +618,7 @@ q9_summary <-
 #link TC3 to q7 IDs
 q9.domain <- 
   q9_orga %>% 
-  left_join(domain, by = "Internal.ID") %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
   select(-method) %>% 
   print() ## n = 358 = unique(Internal.ID)
 
@@ -627,11 +627,9 @@ Workflow.q9 <-
   q9.domain %>% 
   unique()
 
-nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #113
-nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#192
-nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #103
-nOther <- filter(Workflow.q9, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #20
-
+nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #200
+nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#66
+nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #164
 
 Workflow_Health <- filter(Workflow.q9, TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
@@ -651,14 +649,7 @@ Workflow_SSH <- filter(Workflow.q9, TC3=="Social Sciences and Humanities") %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSSH)*100) 
 
-Workflow_Other <- filter(Workflow.q9, TC3=="Other") %>%
-  group_by(TC3, answer) %>%
-  summarize(n = n()) %>%
-  arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
-
-
-Workflow_Tri2 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+Workflow_Tri2 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
 
 ### Stacked Bar Graph on Cloud uses by TRC ####
 
@@ -682,10 +673,10 @@ ggtitle("Use of cloud services") +
   q10 <- survey_organized_spread %>% 
     select(Internal.ID, X10) %>% 
     unnest(X10) %>% 
-    rename(factor = X10) # n = 278
+    rename(factor = X10) # n = 357
   
   #Create a table with domain for TC3 by ID
-  domain # n = 366
+  domain1 # n = 474
   
   #Organize q7 by adding all "other" answers together
   q10_orga <- 
@@ -724,7 +715,7 @@ ggtitle("Use of cloud services") +
   #link TC3 to q7 IDs
   q10.domain <- 
     q10_orga %>% 
-    left_join(domain, by = "Internal.ID") %>% 
+    left_join(domain1, by = "Internal.ID") %>% 
     select(-factor) %>% 
     print() ## n = 356
   
@@ -737,8 +728,7 @@ ggtitle("Use of cloud services") +
   nHR <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
   nSE <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
   nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #105
-  nOther <- filter(Workflow.q10, TC3 == "Other") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #19
-  
+ 
   
   Workflow_Health <- filter(Workflow.q10, TC3=="Health Research") %>%
     group_by(TC3, answer) %>%
@@ -757,15 +747,9 @@ ggtitle("Use of cloud services") +
     summarize(n = n()) %>%
     arrange(desc(n),.by_group = T) %>%
     mutate('%' = (n / nSSH)*100) 
+ 
   
-  Workflow_Other <- filter(Workflow.q10, TC3=="Other") %>%
-    group_by(TC3, answer) %>%
-    summarize(n = n()) %>%
-    arrange(desc(n),.by_group = T) %>%
-    mutate('%' = (n / nSSH)*100) 
-  
-  
-  Workflow_Tri2 <- rbind(Workflow_Other, Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+  Workflow_Tri2 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
   
 ### Stacked Bar Graph on Cloud uses by TRC ####
   
@@ -851,18 +835,18 @@ q13_summay <-
 q13_org_domain <- 
   q13_org %>% 
   left_join(domain_new_table, by = "Internal.ID") %>% 
-  select(-X13, -Domain)
+  select(-X13)
 
 
 q13_org_domain_summary <- 
   q13_org_domain %>% 
-  group_by(credits, Domain_n) %>% 
+  group_by(credits, Domain) %>% 
   count() %>% 
   arrange(-n) %>% 
   print()
 
 #### plot ####
-ggplot(q13_org_domain_summary, aes(fill=Domain_n, y=n, x=credits)) + 
+ggplot(q13_org_domain_summary, aes(fill=Domain, y=n, x=credits)) + 
   geom_bar(position="stack", stat="identity") #A comment, we should change "NA" in "Domain" into "Not specified", something like that
 
 
@@ -889,18 +873,18 @@ q14_summay <-
 q14_org_domain <- 
   q14_org %>% 
   left_join(domain_new_table, by = "Internal.ID") %>% 
-  select(-X14, -Domain)
+  select(-X14)
 
 
 q14_org_domain_summary <- 
   q14_org_domain %>% 
-  group_by(credits, Domain_n) %>% 
+  group_by(credits, Domain) %>% 
   count() %>% 
   arrange(-n) %>% 
   print()
 
 #### plot ####
-ggplot(q14_org_domain_summary, aes(fill=Domain_n, y=n, x=credits)) + 
+ggplot(q14_org_domain_summary, aes(fill=Domain, y=n, x=credits)) + 
   geom_bar(position="stack", stat="identity") #A comment, we should change "NA" in "Domain" into "Not specified", something like that
 
 
