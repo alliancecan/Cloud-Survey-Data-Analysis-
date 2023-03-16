@@ -1362,11 +1362,165 @@ q19.34.sum.flip <- q19.34.sum.merged %>%
                         -1*proportion, proportion))
 
 
-
+#### Plot ####
 ggplot(q19.34.sum.flip, aes(fill=Question, y=new_n, x=answer_n)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
+  scale_fill_manual(values =  cb_pie1)
+
+
+
+### Q20 & Q35 ######
+q20.35 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X20, X35) %>% 
+  unnest(c(X20, X35)) %>% 
+  gather("Question", "answer", 2:3) %>% 
+  unique() # n = 241
+
+
+#Change replace X20 and X35 by the questions
+q20.35$Question[q20.35$Question == "X20"] <- "Is any of the content stored or shared on the commercial cloud controlled,\nhigh risk or sensitive data?"
+q20.35$Question[q20.35$Question == "X35"] <- "Is any of the content stored or shared on the Alliance Cloud controlled,\nhigh risk or sensitive data?"
+
+#Organize data = gather "other please specify"
+
+
+#summarise data
+q20.35.summary <- 
+  q20.35 %>% group_by(Question, answer) %>% count() %>% 
+  drop_na()
+
+#sum
+q20.35.sum <- 
+  q20.35.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q20.35.sum.merged <- 
+  q20.35.summary %>% 
+  left_join(q20.35.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
+
+#Add negative values to create the mirror barplot graph
+q20.35.sum.flip <- q20.35.sum.merged %>% 
+  mutate(new_n = ifelse(Question == "Is any of the content stored or shared on the commercial cloud controlled,\nhigh risk or sensitive data?",
+                        -1*proportion, proportion))
+
+
+#### Plot ####
+ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("Commercial cloud vs Alliance Community cloud")+
+  scale_fill_manual(values =  cb_pie1)
+
+
+### Q21 & Q36 ######
+q21.36 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X21, X36) %>% 
+  unnest(c(X21, X36)) %>% 
+  gather("Question", "answer", 2:3) %>% 
+  unique() # n = 241
+
+
+#Change replace X21 and X36 by the questions
+q21.36$Question[q21.36$Question == "X21"] <- "Do you need to securely share data stored on the commercial cloud\nwith specific collaborators??"
+q21.36$Question[q21.36$Question == "X36"] <- "Do you need to securely share data stored on the Alliance\ncloud-specific collaborators?"
+q21.36$answer[q21.36$answer == "No "] <- "No"
+q21.36$answer[q21.36$answer == "Yes "] <- "Yes"
+q21.36$answer[q21.36$answer == "Not sure "] <- "Not sure"
+q21.36$answer[q21.36$answer == "Non"] <- "No"
+
+#Organize data = gather "other please specify"
+
+
+#summarise data
+q21.36.summary <- 
+  q21.36 %>% group_by(Question, answer) %>% count() %>% 
+  drop_na()
+
+#sum
+q21.36.sum <- 
+  q21.36.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q21.36.sum.merged <- 
+  q21.36.summary %>% 
+  left_join(q21.36.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
+
+#Add negative values to create the mirror barplot graph
+q21.36.sum.flip <- q21.36.sum.merged %>% 
+  mutate(new_n = ifelse(Question == "Do you need to securely share data stored on the Alliance\ncloud-specific collaborators?",
+                        -1*proportion, proportion))
+
+
+#### Plot ####
+ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("The need to securely share data on clouds")+
+  scale_fill_manual(values =  cb_pie1)
+
+
+
+### Q22 & Q37 ######
+q22 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X22) %>% 
+  unnest(X22)
+
+q37 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X37) %>% 
+  unnest(X37)
+
+
+q22.37 <- 
+  full_join(q22, q37, by = "Internal.ID") %>% 
+  gather("Question", "answer", 2:3) %>% 
+  unique() # n = 256
+
+#Change replace X22 and X37 by the questions
+q22.37$Question[q22.37$Question == "X22"] <- "How do you transfer the data stored on the commercial cloud?"
+q22.37$Question[q22.37$Question == "X37"] <- "How do you transfer the data stored on the Alliance Cloud?"
+q22.37$answer[q22.37$answer == "Automatically using software (i.e., Globus)"] <- "Automatically using software (e.g., Globus)"
+q22.37$answer[q22.37$answer == "Manually using software (i.e., Globus)"] <- "Manually using software (e.g., Globus)"
+
+
+#summarise data
+q22.37.summary <- 
+  q22.37 %>% group_by(Question, answer) %>% count() %>% 
+  drop_na()
+
+#sum
+q22.37.sum <- 
+  q22.37.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q22.37.sum.merged <- 
+  q22.37.summary %>% 
+  left_join(q22.37.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
+
+#Add negative values to create the mirror barplot graph
+q22.37.sum.flip <- q22.37.sum.merged %>% 
+  mutate(new_n = ifelse(Question == "How do you transfer the data stored on the Alliance Cloud?",
+                        -1*proportion, proportion))
+
+#### Plot ####
+ggplot(q22.37.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("The need to securely share data on clouds")+
   scale_fill_manual(values =  cb_pie1)
 
