@@ -587,7 +587,7 @@ Workflow_SSH <- filter(Workflow.q7, TC3=="Social Sciences and Humanities") %>%
 
 Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
 
-
+#### Plot ####
 ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
@@ -854,7 +854,7 @@ q12.28.sum$answer[q12.28.sum$answer == "No "] <- "No"
 q12.28.sum$answer[q12.28.sum$answer == "Yes "] <- "Yes"
 q12.28.sum$answer[q12.28.sum$answer == "Not sure "] <- "Not sure"
 
-
+#Add negative values to create the mirror barplot graph
 q12.28.sum.flip <- q12.28.sum %>% 
   mutate(new_n = ifelse(Question == "Have you used a commercial cloud provider?",
                         -1*n, n))
@@ -912,12 +912,23 @@ q13_org_domain_summary <-
   count() %>% 
   arrange(-n) %>% 
   drop_na() %>% 
+  mutate(sort = ifelse(
+    credits == "$0", 1, ifelse(
+      credits == "< $1000", 2, ifelse(
+        credits == "$1000 - $5000", 3, ifelse(
+          credits == "$5000 - $50000", 4, ifelse(
+            credits == "$50000 - $100000", 5, ifelse(
+              credits == "> $100000", 6, 7))))))) %>%  #arrange the data
+  
   print()
 
 #### plot ####
 
-ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=credits)) + 
-  geom_bar(position="stack", stat="identity") #A comment, we should change "NA" in "Domain" into "Not specified", something like that
+ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cbp1)+
+  ggtitle("Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group\nconsume over the last calendar year on commercial cloud resources?")+
+  xlab("Funds ($)") + ylab("Answer")
 
 
 ### Q14 - Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
@@ -952,36 +963,47 @@ q14_org_domain_summary <-
   count() %>% 
   arrange(-n) %>% 
   drop_na() %>% 
+  mutate(sort = ifelse(
+    credits == "$0", 1, ifelse(
+      credits == "< $1000", 2, ifelse(
+        credits == "$1000 - $5000", 3, ifelse(
+          credits == "$5000 - $50000", 4, ifelse(
+            credits == "$50000 - $100000", 5, ifelse(
+              credits == "> $100000", 6, 7))))))) %>%  #arrange the data
   print()
 
 #### plot ####
-ggplot(q14_org_domain_summary, aes(fill=TC3, y=n, x=credits)) + 
-  geom_bar(position="stack", stat="identity") #A comment, we should change "NA" in "Domain" into "Not specified", something like that
+ggplot(q14_org_domain_summary, aes(fill=TC3, y=n, x=reorder(credits, sort))) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cbp1)+
+  ggtitle("Approximately how many dollars (CDN) of research funds did your research group spend over the last\ncalendar year on commercial cloud resources?")+
+  xlab("Funds ($)") + ylab("Answer")
 
 #### plot Q13 & Q14####
-q13.14 <- 
-  survey_organized_spread %>% # n = 507
-  select(Internal.ID, X13, X14) %>% 
-  unnest(c(X13, X14))
-
-q13.14_org <- 
-  q13.14 %>% 
-  mutate(credits.x13 = ifelse(
-    X14 == "$0 ","$0", X13), 
-    credits.x14 = ifelse(
-      X14 == "$0 ","$0", X14)) %>% 
-  select(-X13, -X14) # n = 218
-
-q13.14_summay <- 
-  q13.14_org %>% 
-  group_by(credits.x13, credits.x14) %>% 
-  count() %>% 
-  arrange(-n) %>% 
-  print() # n = 218
-
-#bar plot
-ggplot(q13.14_summay, aes(fill=answer, y=n, x=Question)) + 
-  geom_bar(position="fill", stat="identity")
+# q13.14 <- 
+#   survey_organized_spread %>% # n = 507
+#   select(Internal.ID, X13, X14) %>% 
+#   unnest(c(X13, X14))
+# 
+# q13.14_org <- 
+#   q13.14 %>% 
+#   mutate(credits.x13 = ifelse(
+#     X14 == "$0 ","$0", X13), 
+#     credits.x14 = ifelse(
+#       X14 == "$0 ","$0", X14)) %>% 
+#   select(-X13, -X14) # n = 218
+# 
+# q13.14_summay <- 
+#   q13.14_org %>% 
+#   group_by(credits.x13, credits.x14) %>% 
+#   count() %>% 
+#   arrange(-n) %>% 
+#   print() # n = 218
+# 
+# #bar plot
+# ggplot(q13.14_summay, aes(fill=answer, y=n, x=Question)) + 
+#   geom_bar(position="fill", stat="identity")+
+#   ggtitle("")
 
 ### Q15 - How is your commercial cloud budget funded? ######
 q15 <- 
@@ -1005,7 +1027,204 @@ q15$X15[q15$X15 == "Its bundled in with our overall storage for the University"]
 
 q15 <- q15 %>% drop_na()
   
-q15_org <- 
+#link TC3 to q15 IDs
+q15.domain <- 
   q15 %>% 
-  mutate(credits = ifelse(
-    X15 == "$0 ","$0", X15))
+  left_join(domain1, by = "Internal.ID") %>% 
+  print() ## n = 192
+
+
+Workflow.q15 <- q15.domain
+
+Workflow.q15 <- 
+  q15.domain %>% 
+  mutate(TC3 = replace_na(Workflow.q15$TC3, "Other")) %>% 
+  rename(answer = X15) %>% 
+  unique()
+
+nHR <- filter(Workflow.q15, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #72
+nSE <- filter(Workflow.q15, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#106
+nSSH <- filter(Workflow.q15, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #59
+
+
+
+Workflow_Health <- filter(Workflow.q15, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q15, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q15, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Commercial Cloud Budget Funding") +
+  xlab("") + 
+  ylab("")
+
+
+### Q16 - How is your commercial cloud budget funded? ######
+q16 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X16) %>% 
+  unnest(X16) %>% 
+  filter(!X16 == "Other") # n = 210
+
+#add other unique answer (other) together
+to_filter <- q16 %>% group_by(X16) %>% count()
+
+q16 <- 
+  q16 %>% 
+  left_join(to_filter, by = "X16")
+  
+q16 <- 
+  q16 %>% 
+  mutate(answer = ifelse(
+    n == 1, "Other", X16)) %>% 
+  select(-n, -X16)
+
+#link TC3 to q16 IDs
+q16.domain <- 
+  q16 %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  drop_na() %>% 
+  print()
+
+
+Workflow.q16 <- q16.domain
+
+nHR <- filter(Workflow.q16, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #75
+nSE <- filter(Workflow.q16, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#116
+nSSH <- filter(Workflow.q16, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #257
+
+
+
+Workflow_Health <- filter(Workflow.q16, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q16, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q16, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Primary reason for using a commercial cloud") +
+  xlab("") + 
+  ylab("")
+
+### Q16 - How is your commercial cloud budget funded? ######
+q17 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X17) %>% 
+  unnest(X17) %>% 
+  filter(!X17 == "Other") # n = 210
+
+#add other unique answer (other) together
+to_filter <- q17 %>% group_by(X17) %>% count()
+
+q17.org <- 
+  q17 %>% 
+  mutate(answer = ifelse(
+    X17 == "2i2c", "Other", ifelse(
+      X17 == "Anonymous Functions, glue components, Serverless Databases", "Other", ifelse(
+        X17 == "Databases (BigQuery)", "Object storage ", ifelse(
+          X17 == "Docker", "Containers and container orchestration (Kubernetes) ", ifelse(
+            X17 == "Dropbox", "Object storage ", ifelse(
+              X17 == "FPGAs", "Other", ifelse(
+                X17 == "Google Drive, one drive", "Object storage ", ifelse(
+                  X17 == "I'm not sure what most of these terms refer to: I use Dropbox, Zotero and Google Drive", "Object storage ", ifelse(
+                    X17 == "Je ne sais pas", NA, ifelse(
+                      X17 == "Pour la recherche, aucun service sur nuage, informations trop sensibles", "Other", ifelse(
+                        X17 == "These questions are too vague to gather any meaningful data.", NA, ifelse(
+                          X17 == "aucune presentement", NA, ifelse(
+                            X17 == "file storage and retrieval", "Object storage ", ifelse(
+                              X17 == "gestion de versions, codes", "Shared filesystem ", ifelse(
+                                X17 == "probably other aspects too, but I don't do this personally", "Other", ifelse(
+                                  X17 == "simultaneous wireless syncing from desktop or phone to web", "Other", X17)
+                                )))))))))))))))) %>% 
+  drop_na() %>% 
+  select(-X17)
+
+#link TC3 to q17 IDs
+q17.domain <- 
+  q17.org %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  unique() %>% 
+  drop_na() %>% 
+  print() # n = 192
+
+
+Workflow.q17 <- q17.domain
+
+nHR <- filter(Workflow.q17, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #69
+nSE <- filter(Workflow.q17, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#109
+nSSH <- filter(Workflow.q17, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #59
+
+
+
+Workflow_Health <- filter(Workflow.q17, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q17, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q17, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Primary reason for using a commercial cloud") +
+  xlab("") + 
+  ylab("")
+
