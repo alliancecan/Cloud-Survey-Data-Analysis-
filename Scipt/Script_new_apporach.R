@@ -844,40 +844,51 @@ q12.28 <-
   unnest(c(X12, X28)) %>% 
   gather("Question", "answer", 2:3)
 
-q12.28.sum <- 
+q12.28.summary <- 
   q12.28 %>% group_by(Question, answer) %>% count() %>% 
   drop_na()
 
-q12.28.sum$Question[q12.28.sum$Question == "X12"] <- "Have you used a commercial cloud provider?"
-q12.28.sum$Question[q12.28.sum$Question == "X28"] <- "Have you used the Alliance Community Cloud?"
-q12.28.sum$answer[q12.28.sum$answer == "No "] <- "No"
-q12.28.sum$answer[q12.28.sum$answer == "Yes "] <- "Yes"
-q12.28.sum$answer[q12.28.sum$answer == "Not sure "] <- "Not sure"
+q12.28.summary$Question[q12.28.summary$Question == "X12"] <- "Have you used a commercial cloud provider?"
+q12.28.summary$Question[q12.28.summary$Question == "X28"] <- "Have you used the Alliance Community Cloud?"
+q12.28.summary$answer[q12.28.summary$answer == "No "] <- "No"
+q12.28.summary$answer[q12.28.summary$answer == "Yes "] <- "Yes"
+q12.28.summary$answer[q12.28.summary$answer == "Not sure "] <- "Not sure"
+
+#sum
+q12.28.sum <- 
+  q12.28.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q12.28.sum.merged <- 
+  q12.28.summary %>% 
+  left_join(q12.28.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
 
 #Add negative values to create the mirror barplot graph
-q12.28.sum.flip <- q12.28.sum %>% 
+q12.28.summary.flip <- q12.28.sum.merged %>% 
   mutate(new_n = ifelse(Question == "Have you used a commercial cloud provider?",
-                        -1*n, n))
+                        -1*proportion, proportion))
   
 #ggplot comparing answers
 cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
-ggplot(q12.28.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
-  xlab("Number of responses") + ylab("Answer")+
+  xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
   scale_fill_manual(values =  cb_pie1)
   
 
 
-#ggplot comparing questions
-ggplot(q12.28.sum, aes(fill=answer, y=n, x=Question)) + 
-  geom_bar(position="fill", stat="identity")+ scale_fill_manual(values =  cb_pie)
-
-
-ggplot(q12.28.sum, aes(x=answer, y=n, fill=Question)) + 
-  geom_bar(stat="identity", position="identity")+
-  coord_flip()
+# #ggplot comparing questions
+# ggplot(q12.28.summary, aes(fill=answer, y=n, x=Question)) + 
+#   geom_bar(position="fill", stat="identity")+ scale_fill_manual(values =  cb_pie)
+# 
+# 
+# ggplot(q12.28.summary, aes(x=answer, y=n, fill=Question)) + 
+#   geom_bar(stat="identity", position="identity")+
+#   coord_flip()
 
 
 ### Q13 - HApproximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
@@ -1147,7 +1158,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   xlab("") + 
   ylab("")
 
-### Q16 - How is your commercial cloud budget funded? ######
+### Q17 - What components of the commercial cloud do you use?? ######
 q17 <- 
   survey_organized_spread %>% # n = 507
   select(Internal.ID, X17) %>% 
@@ -1227,4 +1238,135 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   ggtitle("Primary reason for using a commercial cloud") +
   xlab("") + 
   ylab("")
+
+
+### Q18 & Q33 ######
+q18.33 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X18, X33) %>% 
+  unnest(c(X18, X33)) %>% 
+  gather("Question", "answer", 2:3) # n = 239
+
+#### Yes-No ####
+
+#select only Yes and No
+q18.33.y.n <- 
+  q18.33 %>% 
+  filter(answer == "Yes" | answer == "No") # n = 239
+
+#Change replace X18 and X33 by the questions
+q18.33.y.n$Question[q18.33.y.n$Question == "X18"] <- "Are there particular platforms or software services you currently deploy\nor wish to deploy in your commercial cloud environments which you feel\nwould be valuable to be offered as a national service for all researchers to access?"
+q18.33.y.n$Question[q18.33.y.n$Question == "X33"] <- "Are there particular platforms or software services you currently deploy\nor wish to deploy in your own cloud environments which you feel would\nbe valuable to be offered as a national service for all researchers to access?"
+
+#summarise data
+q18.33.sum <- 
+  q18.33.y.n %>% group_by(Question, answer) %>% count() %>% 
+  drop_na()
+
+#Add negative values to create the mirror barplot graph
+q18.33.sum.flip <- q18.33.sum %>% 
+  mutate(new_n = ifelse(Question == "Are there particular platforms or software services you currently deploy\nor wish to deploy in your commercial cloud environments which you feel\nwould be valuable to be offered as a national service for all researchers to access?",
+                        -1*n, n))
+
+#### Plot- Yes - No####
+
+# cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
+ggplot(q18.33.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Number of responses") + ylab("Answer")+
+  ggtitle("Commercial cloud vs Alliance Community cloud")+
+  scale_fill_manual(values =  cb_pie1)
+
+ggplot(q18.33.sum, aes(fill=Question, y=n, x=answer)) + 
+  geom_bar(position="fill", stat="identity")+
+  xlab("Number of responses") + ylab("Answer")+
+  ggtitle("Commercial cloud vs Alliance Community cloud")+
+  scale_fill_manual(values =  cb_pie1)
+
+
+
+
+
+#### Yes - specify ####
+q18.33.specify <- 
+  q18.33 %>% 
+  filter(!answer == "Yes" & !answer == "No")
+
+q18.33.specify <- read.csv("q18_33_clean.csv")
+
+#list of "if yes please specify" for both questions
+q18.33.specify %>% group_by(Question,answer_clean) %>% count()
+
+
+### Q19 & Q34 ######
+q19 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X19) %>% 
+  unnest(X19)
+  
+  q34 <- 
+    survey_organized_spread %>% 
+    select(Internal.ID, X34) %>% 
+  unnest(X34)
+
+  
+q19.34 <- 
+  full_join(q19, q34, by = "Internal.ID") %>% 
+  gather("Question", "answer", 2:3) %>% 
+  unique() # n = 241
+
+#Change replace X19 and X34 by the questions
+q19.34$Question[q19.34$Question == "X19"] <- "Which of the following functions have you used the commercial cloud for?"
+q19.34$Question[q19.34$Question == "X34"] <- "How have you used the Alliance Cloud to share data (if at all)?"
+
+#Organize data = gather "other please specify"
+
+q19.34.org <- 
+  q19.34 %>% 
+  mutate(answer_n = ifelse(
+    answer == "Sharing research data publicly", answer, ifelse(
+      answer == "Storing research data, no sharing involved", answer, ifelse(
+        answer == "Sharing research data with collaborators only", answer, ifelse(
+          answer == "Sharing research data publicly", answer, ifelse(
+            answer == "Storing research data, no sharing involved", answer, ifelse(
+              answer == "Sharing research data with collaborators only", answer, ifelse(
+                answer == "Other", "Other sharing activity", "Specified"
+                )))))))) %>% 
+  drop_na()
+
+q19.34.org <- 
+  q19.34.org %>% 
+  filter(!answer_n == "Specified") # n = 341
+
+
+#summarise data
+q19.34.summary <- 
+  q19.34.org %>% group_by(Question, answer_n) %>% count() %>% 
+  drop_na()
+
+#sum
+q19.34.sum <- 
+  q19.34.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q19.34.sum.merged <- 
+  q19.34.summary %>% 
+  left_join(q19.34.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
+
+#Add negative values to create the mirror barplot graph
+q19.34.sum.flip <- q19.34.sum.merged %>% 
+  mutate(new_n = ifelse(Question == "How have you used the Alliance Cloud to share data (if at all)?",
+                        -1*proportion, proportion))
+
+
+
+ggplot(q19.34.sum.flip, aes(fill=Question, y=new_n, x=answer_n)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("Commercial cloud vs Alliance Community cloud")+
+  scale_fill_manual(values =  cb_pie1)
 
