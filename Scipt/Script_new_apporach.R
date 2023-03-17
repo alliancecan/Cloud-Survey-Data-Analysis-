@@ -872,6 +872,8 @@ q12.28.summary.flip <- q12.28.sum.merged %>%
   
 #ggplot comparing answers
 cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
+cb_pie2 <- rep(c("#D6AB00","#32322F"), 100)
+
 ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
@@ -1358,7 +1360,7 @@ q19.34.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q19.34.sum.flip <- q19.34.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "How have you used the Alliance Cloud to share data (if at all)?",
+  mutate(new_n = ifelse(Question == "Which of the following functions have you used the commercial cloud for?",
                         -1*proportion, proportion))
 
 
@@ -1368,7 +1370,7 @@ ggplot(q19.34.sum.flip, aes(fill=Question, y=new_n, x=answer_n)) +
   coord_flip()+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
-  scale_fill_manual(values =  cb_pie1)
+  scale_fill_manual(values =  cb_pie2)
 
 
 
@@ -1416,7 +1418,7 @@ ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
   coord_flip()+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
-  scale_fill_manual(values =  cb_pie1)
+  scale_fill_manual(values =  cb_pie2)
 
 
 ### Q21 & Q36 ######
@@ -1429,7 +1431,7 @@ q21.36 <-
 
 
 #Change replace X21 and X36 by the questions
-q21.36$Question[q21.36$Question == "X21"] <- "Do you need to securely share data stored on the commercial cloud\nwith specific collaborators??"
+q21.36$Question[q21.36$Question == "X21"] <- "Do you need to securely share data stored on the commercial cloud\nwith specific collaborators?"
 q21.36$Question[q21.36$Question == "X36"] <- "Do you need to securely share data stored on the Alliance\ncloud-specific collaborators?"
 q21.36$answer[q21.36$answer == "No "] <- "No"
 q21.36$answer[q21.36$answer == "Yes "] <- "Yes"
@@ -1457,7 +1459,7 @@ q21.36.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q21.36.sum.flip <- q21.36.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "Do you need to securely share data stored on the Alliance\ncloud-specific collaborators?",
+  mutate(new_n = ifelse(Question == "Do you need to securely share data stored on the commercial cloud\nwith specific collaborators?",
                         -1*proportion, proportion))
 
 
@@ -1467,7 +1469,7 @@ ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
   coord_flip()+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("The need to securely share data on clouds")+
-  scale_fill_manual(values =  cb_pie1)
+  scale_fill_manual(values =  cb_pie2)
 
 
 
@@ -1513,7 +1515,7 @@ q22.37.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q22.37.sum.flip <- q22.37.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "How do you transfer the data stored on the Alliance Cloud?",
+  mutate(new_n = ifelse(Question == "How do you transfer the data stored on the commercial cloud?",
                         -1*proportion, proportion))
 
 #### Plot ####
@@ -1522,5 +1524,163 @@ ggplot(q22.37.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
   coord_flip()+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("The need to securely share data on clouds")+
-  scale_fill_manual(values =  cb_pie1)
+  scale_fill_manual(values =  cb_pie2)
+
+
+### Q23 & Q38 ######
+q23.38 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X23, X38) %>% 
+  unnest(c(X23, X38)) %>% 
+  gather("Question", "answer", 2:3) # n = 239
+
+#### Yes-No- Not sure ####
+
+#select only Yes and No
+q23.38.y.n <- 
+  q23.38 %>% 
+  filter(answer == "Yes" | answer == "No" | answer == "Not sure") # n = 237
+
+#Change replace X23 and X38 by the questions
+q23.38.y.n$Question[q23.38.y.n$Question == "X23"] <- "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?"
+q23.38.y.n$Question[q23.38.y.n$Question == "X38"] <- "Do you have any concerns about storing data on the Alliance Cloud\n(e.g., safety/security, backups)?"
+
+#summarise data
+q23.38.summary <- 
+  q23.38.y.n %>% group_by(Question, answer) %>% count() %>% 
+  drop_na()
+
+#sum
+q23.38.sum <- 
+  q23.38.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q23.38.sum.merged <- 
+  q23.38.summary %>% 
+  left_join(q23.38.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
+
+#Add negative values to create the mirror barplot graph
+q23.38.sum.flip <- q23.38.sum.merged %>% 
+  mutate(new_n = ifelse(Question == "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?",
+                        -1*proportion, proportion))
+
+#### Mirror Plot- Yes - No####
+
+ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("Concerns about storing data")+
+  scale_fill_manual(values =  cb_pie2)
+
+
+#### Yes - specify ####
+q23.38.specify <- 
+  q23.38 %>% 
+  filter(!answer == "Yes" & !answer == "No"  & !answer == "Not sure")
+
+q23.38.specify <- read.csv("q23.38_clean.csv")
+
+#list of "if yes please specify" for both questions
+q23.38.specify <- 
+  q23.38.specify %>% 
+  mutate(answer_clean = ifelse(
+    answer_clean == "Security and privacy", answer_clean, ifelse(
+      answer_clean == "Costs", answer_clean, ifelse(
+        answer_clean == "Backups", answer_clean, "Other"
+      ))))
+
+
+q23.38.specify.summary <- 
+  q23.38.specify %>% group_by(Question,answer_clean) %>% count() %>% 
+  drop_na() %>% arrange(-n)
+
+##For Yes = please specify = Security and Privacy, costs, and backups
+
+
+q23.38.specify.summary$Question[q23.38.specify.summary$Question == "X23"] <- "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?"
+q23.38.specify.summary$Question[q23.38.specify.summary$Question == "X38"] <- "Do you have any concerns about storing data on the Alliance Cloud\n(e.g., safety/security, backups)?"
+
+#sum
+q23.38.specify.sum <- 
+  q23.38.specify.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+#merge sum table to summary table
+
+q23.38.specify.merged <- 
+  q23.38.specify.summary %>% 
+  left_join(q23.38.specify.sum, by = "Question") %>% 
+  mutate(proportion = (n/sum)*100)
+
+#Add negative values to create the mirror barplot graph
+q23.38.sum.flip <- q23.38.specify.merged %>% 
+  mutate(new_n = ifelse(Question == "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?",
+                        -1*proportion, proportion))
+
+#### Mirror Plot- Yes - describe concerns####
+
+# cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
+ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer_clean)) + 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("Concerns about storing data")+
+  scale_fill_manual(values =  cb_pie2)
+
+
+
+### Q25 - Have you lost access to data stored on the commercial cloud due to lack of continuity of funding for your research? ######
+q25 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X25) %>% 
+  unnest(X25)
+
+q25_summay <- 
+  q25 %>% 
+  group_by(X25) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q25_summay, 
+         aes(X25, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+
+
+
+
+
+### Q26 - Do you get support when using the commercial cloud? ######
+q26 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X26) %>% 
+  unnest(X26) # n = 201
+
+q26.y.n <- 
+  q26 %>% 
+  filter(X26 == "Yes" | X26 == "No") # n = 237
+
+
+q26_summay <- 
+  q26.y.n %>% 
+  group_by(X26) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q26_summay, 
+         aes(X26, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie1)
 
