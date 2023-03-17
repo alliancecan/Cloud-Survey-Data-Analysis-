@@ -1745,3 +1745,172 @@ PieDonut(q27_summay,
 
 
 
+
+### Q29 - What is/was your primary reason for using the Alliance Cloud?######
+q29 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X29) %>% 
+  unnest(X29) %>% 
+  filter(!X29 == "Other") # n = 100
+
+#Clean the data = delete column "Other" and change "additional comments" to "Other"
+q29_clean <- 
+  q29 %>% 
+  mutate(answer_n = ifelse(
+    X29 == "Additional computational resources", X29, ifelse(
+      X29 == "Additional storage resources", X29, ifelse(
+        X29 == "Faster-performing computational resources", X29, ifelse(
+          X29 == "Web hosting or web portals", X29, ifelse(
+            X29 == "Specialized hardware (e.g., TPUs, GPUs)", X29, ifelse(
+              X29 == "Contributing to research work currently leveraging the Alliance cloud ", "Contributing to research work currently leveraging the Alliance cloud", ifelse(
+                X29 == "More flexible storage resources", X29, ifelse(
+                  X29 == "Grant or funding requirement ", "Grant or funding requirement", ifelse(
+                    X29 == "Ease of use", X29, ifelse(
+                      X29 == "Requiring cloud software not available on the commercial clouds ", "Requiring cloud software not available on the commercial clouds", ifelse(
+                        X29 == "Replicating research study/analysis previously performed on the Alliance cloud", X29, ifelse(
+                          X29 == "Matériel spécialisé (p. ex., TPU, GPU)", "Specialized hardware (e.g., TPUs, GPUs)", ifelse(
+                            X29 == "Additional comments:", "Delete", ifelse(
+                              X29 == "Autre (veuillez préciser) :", "Delete", "Other"
+                              ))))))))))))))) %>% 
+  filter(!answer_n == "Delete") # n = 100
+
+
+#link TC3 to q29 IDs
+q29.domain <- 
+  q29_clean %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  drop_na() %>% 
+  print()
+
+
+Workflow.q29 <- q29.domain
+
+nHR <- filter(Workflow.q29, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #28
+nSE <- filter(Workflow.q29, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#71
+nSSH <- filter(Workflow.q29, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #19
+
+
+
+Workflow_Health <- filter(Workflow.q29, TC3=="Health Research") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q29, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q29, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Primary reason for using Alliance cloud") +
+  xlab("") + 
+  ylab("")
+
+ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Primary reason for using Alliance cloud") +
+  xlab("") + 
+  ylab("")
+
+
+### Q30 - What components of the commercial cloud do you use?? ######
+q30 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X30) %>% 
+  unnest(X30) %>% 
+  filter(!X30 == "Other") # n = 92
+
+#add other unique answer (other) together
+to_filter <- q30 %>% group_by(X30) %>% count()
+
+q30.org <- 
+  q30 %>% 
+  mutate(answer = ifelse(
+    X30 == "2i2c", "Other", ifelse(
+      X30 == "Anonymous Functions, glue components, Serverless Databases", "Other", ifelse(
+        X30 == "Databases (BigQuery)", "Object storage ", ifelse(
+          X30 == "Docker", "Containers and container orchestration (Kubernetes) ", ifelse(
+            X30 == "Dropbox", "Object storage ", ifelse(
+              X30 == "FPGAs", "Other", ifelse(
+                X30 == "Google Drive, one drive", "Object storage ", ifelse(
+                  X30 == "I'm not sure what most of these terms refer to: I use Dropbox, Zotero and Google Drive", "Object storage ", ifelse(
+                    X30 == "Je ne sais pas", NA, ifelse(
+                      X30 == "Pour la recherche, aucun service sur nuage, informations trop sensibles", "Other", ifelse(
+                        X30 == "These questions are too vague to gather any meaningful data.", NA, ifelse(
+                          X30 == "aucune presentement", NA, ifelse(
+                            X30 == "file storage and retrieval", "Object storage ", ifelse(
+                              X30 == "gestion de versions, codes", "Shared filesystem ", ifelse(
+                                X30 == "probably other aspects too, but I don't do this personally", "Other", ifelse(
+                                  X30 == "simultaneous wireless syncing from desktop or phone to web", "Other", X30)
+                              )))))))))))))))) %>% 
+  drop_na() %>% 
+  select(-X30)
+
+#link TC3 to q30 IDs
+q30.domain <- 
+  q30.org %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  unique() %>% 
+  drop_na() %>% 
+  print() # n = 192
+
+
+Workflow.q30 <- q30.domain
+
+nHR <- filter(Workflow.q30, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #69
+nSE <- filter(Workflow.q30, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#109
+nSSH <- filter(Workflow.q30, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #59
+
+
+
+Workflow_Health <- filter(Workflow.q30, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q30, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q30, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Primary reason for using a commercial cloud") +
+  xlab("") + 
+  ylab("")
+
