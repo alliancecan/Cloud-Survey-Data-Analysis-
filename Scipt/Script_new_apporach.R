@@ -1968,7 +1968,7 @@ ggplot(q32.specify.summary, aes(x= reorder(answer_clean, order))) +
   xlab("Platforms or software services") + 
   ylab("Proportion (%)")
 
-### Q4 - Do you currently, or have you in the past, use(d) cloud resources ######
+### Q39 - Would it be helpful to have tools that track your cloud data storage and remind you to back up or migrate content? ######
 q39 <- 
   survey_organized_spread %>% 
   select(Internal.ID, X39) %>% 
@@ -1990,3 +1990,94 @@ PieDonut(q39_summay,
          title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
 
+
+
+
+### Q40 -  On top of the existing resources, which of the following technical support methods would you like to access? Check all that apply ######
+#### data cleaning & preparation ####
+#extract question 40
+q40 <- survey_organized_spread %>% 
+  select(Internal.ID, X40) %>% 
+  unnest(X40) %>% 
+  rename(answer = X40) # n = 92
+
+#Create a table with domain for TC3 by ID
+domain <- 
+  domain_new_table1 %>% 
+  select(-Domain, -n)
+
+domain1 <- domain
+
+#### domain1$TC3 <-
+####  recode_factor(domain1$TC3, CIHR = "Health Research",
+###            NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
+
+
+#Organize q40 by adding all "other" answers together
+q40_orga <- 
+  q40 %>% 
+  filter(!answer == "Other") %>% #Other is an invalid answer, keeping it will add extra false answers as they are previsouly "Other (Please specify)"
+  mutate(answer_n =
+           ifelse(answer == "Accessible manuals (e.g., lay language; PDF)", "Accessible manuals", ifelse(
+             answer == "Short video tutorials on basic cloud tasks", answer, ifelse(
+               answer == "Online real-time chat with cloud support (i.e., Mattermost, Rocket Chat or Slack)", "Online real-time chat with cloud support", ifelse(
+                 answer == "Topical cloud-related training", answer, ifelse(
+                   answer == "Virtual office hours", answer, "Other"
+                     )))))) # n = 92
+
+#summarize the data
+q40_summary <- 
+  q40_orga %>% 
+  group_by(answer_n) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+
+#link TC3 to q40 IDs
+q40.domain <- 
+  q40_orga %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  select(-answer) %>% 
+  print() ## n = 92
+
+
+Workflow.q40 <- q40.domain
+
+nHR <- filter(Workflow.q40, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #28
+nSE <- filter(Workflow.q40, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#59
+nSSH <- filter(Workflow.q40, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #22
+
+
+
+Workflow_Health <- filter(Workflow.q40, TC3=="Health Research") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q40, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q40, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Exploring Technical Support Options for Additional Resources") +
+  xlab("") + 
+  ylab("")
+# fixed_plot_aspect()
