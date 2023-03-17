@@ -7,7 +7,7 @@ Column,Internal.ID,Question,answer,answer_clean
 6,25050647,X18,see above,NA
 7,25066420,X18,Nextcloud,Nextcloud
 8,25073093,X18,cocalc,cocalc
-9,25080210,X18,kubernetes with science platform (CANFAR-like),Kubernetes
+9,25080210,X18,kubernetes with science platform (CANFAR-like),Managed Kubernetes
 10,25088147,X18,NOT OneDrive,NA
 11,25088984,X18,"Dropbox is 500000000000 times less glitchy, more reliable, and easier to use than one-drive. For that matter, Google Drive is also easier, less problematic when trying to share, and just more attractive than One-Drive",Google Drive
 11,25088984,X18,"Dropbox is 500000000000 times less glitchy, more reliable, and easier to use than one-drive. For that matter, Google Drive is also easier, less problematic when trying to share, and just more attractive than One-Drive",Dropbox
@@ -55,7 +55,7 @@ Column,Internal.ID,Question,answer,answer_clean
 47,25113608,X33,historical documents,historical documents
 48,25115628,X33,document processing pipelines,document processing pipelines
 49,25133606,X33,Data catalog,Data catalog
-50,25187254,X33,"We would like to share large raw datasets for occasional use by researchers in the future.  This might be less than one download a year, but our data acquisition was funded by NSERC and cost $11 million dollars and should not be lost.",
+50,25187254,X33,"We would like to share large raw datasets for occasional use by researchers in the future.  This might be less than one download a year, but our data acquisition was funded by NSERC and cost $11 million dollars and should not be lost.",Other
 51,25214105,X33,GPT-3,GPT-3
 52,25224594,X33,Unity,Unity
 53,25224814,X33,Unity game engine,Unity game engine
@@ -76,12 +76,12 @@ Column,Internal.ID,Question,answer,answer_clean
 62,25236835,X33,Gestion de code du type GitHub/Gitlab,Gitlab
 63,25311578,X33,Galaxy,Galaxy
 64,25036445,X33,"OLTP databases, data warehouse software.",OLPT
-65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Kubernetes
+65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Managed Kubernetes
 65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Kubeflow
 65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Pachyderm
 65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",JupyterHub
 66,25297783,X33,"Jupyterhub, Vault",JupyterHub
-67,25090587,X33,I think all the extra services that CANFAR provides to astronomers is a great model for what would be useful in other research communities,
+67,25090587,X33,I think all the extra services that CANFAR provides to astronomers is a great model for what would be useful in other research communities,CANFAR
 68,25232183,X33,NVIDIA GPU Nodes (H100s/A100s),NVIDIA GPU Nodes (H100s/A100s)
 69,25281424,X33,OMERO (we've already begun the process of nationalizing it and have gathered a lot of support so far),OMERO
 70,25291966,X33,Gromacs (already on the Alliance),Gromacs

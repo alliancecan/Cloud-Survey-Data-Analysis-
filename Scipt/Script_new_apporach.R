@@ -1843,28 +1843,18 @@ q30 <-
 #add other unique answer (other) together
 to_filter <- q30 %>% group_by(X30) %>% count()
 
-q30.org <- 
+q30_n <- 
   q30 %>% 
+  left_join(to_filter, by = "X30")
+
+q30.org <- 
+  q30_n %>% 
   mutate(answer = ifelse(
-    X30 == "2i2c", "Other", ifelse(
-      X30 == "Anonymous Functions, glue components, Serverless Databases", "Other", ifelse(
-        X30 == "Databases (BigQuery)", "Object storage ", ifelse(
-          X30 == "Docker", "Containers and container orchestration (Kubernetes) ", ifelse(
-            X30 == "Dropbox", "Object storage ", ifelse(
-              X30 == "FPGAs", "Other", ifelse(
-                X30 == "Google Drive, one drive", "Object storage ", ifelse(
-                  X30 == "I'm not sure what most of these terms refer to: I use Dropbox, Zotero and Google Drive", "Object storage ", ifelse(
-                    X30 == "Je ne sais pas", NA, ifelse(
-                      X30 == "Pour la recherche, aucun service sur nuage, informations trop sensibles", "Other", ifelse(
-                        X30 == "These questions are too vague to gather any meaningful data.", NA, ifelse(
-                          X30 == "aucune presentement", NA, ifelse(
-                            X30 == "file storage and retrieval", "Object storage ", ifelse(
-                              X30 == "gestion de versions, codes", "Shared filesystem ", ifelse(
-                                X30 == "probably other aspects too, but I don't do this personally", "Other", ifelse(
-                                  X30 == "simultaneous wireless syncing from desktop or phone to web", "Other", X30)
-                              )))))))))))))))) %>% 
+    X30 == "Heat orchestration", X30, ifelse(
+      n == 1, "other", X30
+    ))) %>% 
   drop_na() %>% 
-  select(-X30)
+  select(-X30, -n)
 
 #link TC3 to q30 IDs
 q30.domain <- 
@@ -1872,14 +1862,14 @@ q30.domain <-
   left_join(domain1, by = "Internal.ID") %>% 
   unique() %>% 
   drop_na() %>% 
-  print() # n = 192
+  print() # n = 91
 
 
 Workflow.q30 <- q30.domain
 
-nHR <- filter(Workflow.q30, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #69
-nSE <- filter(Workflow.q30, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#109
-nSSH <- filter(Workflow.q30, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #59
+nHR <- filter(Workflow.q30, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #23
+nSE <- filter(Workflow.q30, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#66
+nSSH <- filter(Workflow.q30, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #18
 
 
 
@@ -1913,4 +1903,67 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   ggtitle("Primary reason for using a commercial cloud") +
   xlab("") + 
   ylab("")
+
+
+### Q32 - Are there cloud services which you would like to be able to access on the Alliance Cloud but currently cannot (e.g., Managed Kubernetes, Galaxy, Docker)? ######
+q32 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X32) %>% 
+  unnest(X32) # n = 96
+
+q32.y.n <- 
+  q32 %>% 
+  filter(X32 == "Yes" | X32 == "No") # n = 237
+
+
+q32_summay <- 
+  q32.y.n %>% 
+  group_by(X32) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q32_summay, 
+         aes(X32, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie1)
+
+#### Yes - specify ####
+q32.specify <- 
+  q32 %>% 
+  filter(!X32 == "Yes" & !X32 == "No")
+
+q32.specify <- read.csv("q32_clean.csv")
+
+#to be used to reorder the plot values
+order <- as.data.frame(c(7:1))
+
+
+q32.specify.summary <- 
+  q32.specify %>% group_by(answer_clean) %>% count() %>% 
+  drop_na() %>% arrange(-n)
+
+#add total n (sum) = to be used to calculate proportions
+sum <- sum(q32.specify.summary$n)
+
+#add proportions
+q32.specify.summary <- 
+  cbind(q32.specify.summary, order) %>% 
+  rename(order = 3) %>% 
+  mutate(sum = sum, Percentage = (n/sum)*100)
+
+#### Plot - yes - specify ####
+ggplot(q32.specify.summary, aes(x= reorder(answer_clean, order))) + 
+  geom_bar(aes(y=Percentage), stat= "identity") +
+  scale_fill_manual(values =  "#D6AB00") + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=Percentage, label= round(Percentage, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Support source for using Commercial Cloud") +
+  xlab("Source") + 
+  ylab("Proportion (%)")
 
