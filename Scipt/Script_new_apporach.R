@@ -1684,3 +1684,64 @@ PieDonut(q26_summay,
          title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie1)
 
+#### Yes - specify ####
+q26.specify <- 
+  q26 %>% 
+  filter(!X26 == "Yes" & !X26 == "No")
+
+q26.specify <- read.csv("q26_clean.csv")
+
+#to be used to reorder the plot values
+order <- as.data.frame(c(7:1))
+
+
+q26.specify.summary <- 
+  q26.specify %>% group_by(answer_clean) %>% count() %>% 
+  drop_na() %>% arrange(-n)
+
+#add total n (sum) = to be used to calculate proportions
+sum <- sum(q26.specify.summary$n)
+
+#add proportions
+q26.specify.summary <- 
+  cbind(q26.specify.summary, order) %>% 
+  rename(order = 3) %>% 
+  mutate(sum = sum, Percentage = (n/sum)*100)
+
+#### Plot - yes - specify ####
+ggplot(q26.specify.summary, aes(x= reorder(answer_clean, order))) + 
+  geom_bar(aes(y=Percentage), stat= "identity") +
+  scale_fill_manual(values =  "#D6AB00") + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=Percentage, label= round(Percentage, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Support source for using Commercial Cloud") +
+  xlab("Source") + 
+  ylab("Proportion (%)")
+
+### Q27 - Would you like support from the Alliance when using the commercial cloud? ######
+q27 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X27) %>% 
+  unnest(X27)
+
+q27_summay <- 
+  q27 %>% 
+  group_by(X27) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q27_summay, 
+         aes(X27, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "", 
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+
+
+
+
+
