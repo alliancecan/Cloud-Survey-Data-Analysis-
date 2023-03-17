@@ -49,7 +49,8 @@
 32,25281424,all of the above,Galaxy
 33,25297915,Managed Kubernetes or Docker,Managed Kubernetes
 33,25297915,Managed Kubernetes or Docker,Docker
-34,25298132,Web services monitoring of our platforms. We use Docker heavily - additional support there would be great too.,Web
+34,25298132,Web services monitoring of our platforms. We use Docker heavily - additional support there would be great too.,Web services
+34,25298132,Web services monitoring of our platforms. We use Docker heavily - additional support there would be great too.,Docker
 35,25352874,kubernetes,Managed Kubernetes
 36,25029523,Nous pourrions éventuellement avoir besoin de Galaxy,Galaxy
 37,25183213,"Clusters HPC pour déclencher des entrainements et inférence depuis un portail web. Galaxy, managed Kubernetes Docker bonnes idées",Clusters HPC

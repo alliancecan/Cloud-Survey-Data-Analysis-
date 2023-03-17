@@ -1939,13 +1939,14 @@ q32.specify <-
 
 q32.specify <- read.csv("q32_clean.csv")
 
-#to be used to reorder the plot values
-order <- as.data.frame(c(7:1))
-
 
 q32.specify.summary <- 
   q32.specify %>% group_by(answer_clean) %>% count() %>% 
   drop_na() %>% arrange(-n)
+
+#to be used to reorder the plot values
+order <- as.data.frame(c(17:1))
+
 
 #add total n (sum) = to be used to calculate proportions
 sum <- sum(q32.specify.summary$n)
@@ -1960,10 +1961,32 @@ q32.specify.summary <-
 ggplot(q32.specify.summary, aes(x= reorder(answer_clean, order))) + 
   geom_bar(aes(y=Percentage), stat= "identity") +
   scale_fill_manual(values =  "#D6AB00") + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=Percentage, label= round(Percentage, digits = 0))) +
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=Percentage, label= round(Percentage, digits = 1))) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Support source for using Commercial Cloud") +
-  xlab("Source") + 
+  ggtitle("Identifying Cloud-based Research Tools for a National Service") +
+  xlab("Platforms or software services") + 
   ylab("Proportion (%)")
+
+### Q4 - Do you currently, or have you in the past, use(d) cloud resources ######
+q39 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X39) %>% 
+  unnest(X39)
+
+q39_summay <- 
+  q39 %>% 
+  group_by(X39) %>% 
+  count()
+
+#### Pie chart ####
+PieDonut(q39_summay, 
+         aes(X39, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=FALSE, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
 
