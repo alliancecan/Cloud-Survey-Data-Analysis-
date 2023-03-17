@@ -878,7 +878,12 @@ cb_pie_3 <- rep(c("#32322F","#B7B6B3", "#D6AB00"), 100)
 ggplot(q11.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
   scale_fill_manual(values =  cb_pie_3)+
-  theme(plot.title = element_text(size = 12, face = "bold"))+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   ggtitle("Do your cloud needs include storing or processing controlled or sensitive data?")
 
 
@@ -893,6 +898,26 @@ q12_summay <-
   group_by(X12) %>% 
   count()
 
+#add domain
+q12.domain <- 
+  q12 %>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q12.domain.summary <- 
+  q12.domain %>% 
+  group_by(TC3, X12) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q12.sum <- 
+  q12.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q12.domain.summary <- 
+  q12.domain.summary %>% 
+  left_join(q12.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X12)
+
 #### Pie chart ####
 PieDonut(q12_summay, 
          aes(X12, count= n), 
@@ -903,6 +928,20 @@ PieDonut(q12_summay,
          showRatioThreshold = F, 
          title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+
+#### plot - domain #### 
+
+ggplot(q12.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie_3)+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Have you used a commercial cloud provider?")
+
 
 
 
@@ -945,7 +984,13 @@ cb_pie2 <- rep(c("#D6AB00","#32322F"), 100)
 
 ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
-  coord_flip()+
+  # coord_flip()+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
   scale_fill_manual(values =  cb_pie1)
@@ -1009,8 +1054,14 @@ q13_org_domain_summary <-
 ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) + 
   geom_bar(position="stack", stat="identity")+ 
   scale_fill_manual(values =  cbp1)+
-  ggtitle("Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group\nconsume over the last calendar year on commercial cloud resources?")+
-  xlab("Funds ($)") + ylab("Answer")
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds\ndid your research group consume over the last calendar year on commercial\ncloud resources?")+
+  xlab("Funds ($)") + ylab("Number of responses")
 
 
 ### Q14 - Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
@@ -1058,8 +1109,14 @@ q14_org_domain_summary <-
 ggplot(q14_org_domain_summary, aes(fill=TC3, y=n, x=reorder(credits, sort))) + 
   geom_bar(position="stack", stat="identity")+ 
   scale_fill_manual(values =  cbp1)+
-  ggtitle("Approximately how many dollars (CDN) of research funds did your research group spend over the last\ncalendar year on commercial cloud resources?")+
-  xlab("Funds ($)") + ylab("Answer")
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Approximately how many dollars (CDN) of research funds did your research group\nspend over the last calendar year on commercial cloud resources?")+
+  xlab("Funds ($)") + ylab("Number of responses")
 
 #### plot Q13 & Q14####
 # q13.14 <- 
@@ -1157,7 +1214,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Commercial Cloud Budget Funding") +
+  ggtitle("Commercial Cloud Budget") +
   xlab("") + 
   ylab("")
 
@@ -1224,7 +1281,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "bottom", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Primary reason for using a commercial cloud") +
   xlab("") + 
   ylab("")
@@ -1305,8 +1362,8 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Primary reason for using a commercial cloud") +
+  theme(legend.position = "bottom", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("What components of the commercial cloud do you use?") +
   xlab("") + 
   ylab("")
 
@@ -1341,21 +1398,17 @@ q18.33.sum.flip <- q18.33.sum %>%
 
 #### Plot- Yes - No####
 
-# cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
-ggplot(q18.33.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
-  geom_bar(position="stack", stat="identity")+
-  coord_flip()+
-  xlab("Number of responses") + ylab("Answer")+
-  ggtitle("Commercial cloud vs Alliance Community cloud")+
-  scale_fill_manual(values =  cb_pie1)
-
 ggplot(q18.33.sum, aes(fill=Question, y=n, x=answer)) + 
   geom_bar(position="fill", stat="identity")+
-  xlab("Number of responses") + ylab("Answer")+
+  xlab("Answer") + ylab("Number of responses")+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
   scale_fill_manual(values =  cb_pie1)
-
-
 
 
 
@@ -1367,7 +1420,7 @@ q18.33.specify <-
 q18.33.specify <- read.csv("q18_33_clean.csv")
 
 #list of "if yes please specify" for both questions
-q18.33.specify %>% group_by(Question,answer_clean) %>% count()
+list <- q18.33.specify %>% group_by(Question,answer_clean) %>% count() %>% drop_na()
 
 
 ### Q19 & Q34 ######
@@ -1437,6 +1490,13 @@ q19.34.sum.flip <- q19.34.sum.merged %>%
 ggplot(q19.34.sum.flip, aes(fill=Question, y=new_n, x=answer_n)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
+  xlab("Answer") + ylab("Number of responses")+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
   scale_fill_manual(values =  cb_pie2)
@@ -1484,7 +1544,12 @@ q20.35.sum.flip <- q20.35.sum.merged %>%
 #### Plot ####
 ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
-  coord_flip()+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
   scale_fill_manual(values =  cb_pie2)
@@ -1535,7 +1600,12 @@ q21.36.sum.flip <- q21.36.sum.merged %>%
 #### Plot ####
 ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
-  coord_flip()+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("The need to securely share data on clouds")+
   scale_fill_manual(values =  cb_pie2)
@@ -1591,8 +1661,14 @@ q22.37.sum.flip <- q22.37.sum.merged %>%
 ggplot(q22.37.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
-  ggtitle("The need to securely share data on clouds")+
+  ggtitle("Data transfer")+
   scale_fill_manual(values =  cb_pie2)
 
 
@@ -1639,9 +1715,14 @@ q23.38.sum.flip <- q23.38.sum.merged %>%
 
 ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
-  coord_flip()+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
-  ggtitle("Concerns about storing data")+
+  ggtitle("Data storing")+
   scale_fill_manual(values =  cb_pie2)
 
 
@@ -1694,8 +1775,14 @@ q23.38.sum.flip <- q23.38.specify.merged %>%
 ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer_clean)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
-  ggtitle("Concerns about storing data")+
+  ggtitle("Concerns about data storing")+
   scale_fill_manual(values =  cb_pie2)
 
 
@@ -1711,6 +1798,27 @@ q25_summay <-
   group_by(X25) %>% 
   count()
 
+
+#add domain
+q25.domain <- 
+  q25 %>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q25.domain.summary <- 
+  q25.domain %>% 
+  group_by(TC3, X25) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q25.sum <- 
+  q25.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q25.domain.summary <- 
+  q25.domain.summary %>% 
+  left_join(q25.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X25)
+
 #### Pie chart ####
 PieDonut(q25_summay, 
          aes(X25, count= n), 
@@ -1723,8 +1831,18 @@ PieDonut(q25_summay,
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
 
 
+#### plot - domain #### 
 
-
+ggplot(q25.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie_3)+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Have you lost access to data stored on the commercial cloud\ndue to lack of continuity of funding for your research?")
 
 ### Q26 - Do you get support when using the commercial cloud? ######
 q26 <- 
@@ -1742,6 +1860,26 @@ q26_summay <-
   group_by(X26) %>% 
   count()
 
+
+#add domain
+q26.domain <- 
+  q26.y.n %>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q26.domain.summary <- 
+  q26.domain %>% 
+  group_by(TC3, X26) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q26.sum <- 
+  q26.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q26.domain.summary <- 
+  q26.domain.summary %>% 
+  left_join(q26.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X26)
 #### Pie chart ####
 PieDonut(q26_summay, 
          aes(X26, count= n), 
@@ -1750,8 +1888,21 @@ PieDonut(q26_summay,
          r0=0.0,r1=1,r2=1.4,start=pi/2,
          labelpositionThreshold=1, 
          showRatioThreshold = F, 
-         title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
+         title= "Do you get support when using the commercial cloud?", 
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie1)
+
+#### plot - domain #### 
+
+ggplot(q26.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie1)+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Do you get support when using the commercial cloud?")
 
 #### Yes - specify ####
 q26.specify <- 
@@ -1799,6 +1950,25 @@ q27_summay <-
   group_by(X27) %>% 
   count()
 
+#add domain
+q27.domain <- 
+  q27%>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q27.domain.summary <- 
+  q27.domain %>% 
+  group_by(TC3, X27) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q27.sum <- 
+  q27.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q27.domain.summary <- 
+  q27.domain.summary %>% 
+  left_join(q27.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X27)
 #### Pie chart ####
 PieDonut(q27_summay, 
          aes(X27, count= n), 
@@ -1814,6 +1984,21 @@ PieDonut(q27_summay,
 
 
 
+
+#### plot - domain #### 
+
+ggplot(q27.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie_3)+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  geom_text(position = position_stack(vjust = .5), 
+            aes(y=Proportion, label=round(Proportion, digits = 0))) +
+  ggtitle("Would you like support from the Alliance when using the commercial cloud?")
 
 ### Q29 - What is/was your primary reason for using the Alliance Cloud?######
 q29 <- 
@@ -1886,18 +2071,8 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Primary reason for using Alliance cloud") +
-  xlab("") + 
-  ylab("")
-
-ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) + 
-  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
-  scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
-  theme_linedraw(base_size = 18) +
-  theme(legend.position = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Primary reason for using Alliance cloud") +
+  theme(legend.position = "bottom", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Primary reason for using the Alliance cloud") +
   xlab("") + 
   ylab("")
 
@@ -1969,7 +2144,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Primary reason for using a commercial cloud") +
+  ggtitle("Components of the Alliance Cloud") +
   xlab("") + 
   ylab("")
 
@@ -1990,6 +2165,25 @@ q32_summay <-
   group_by(X32) %>% 
   count()
 
+#add domain
+q32.domain <- 
+  q32.y.n%>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q32.domain.summary <- 
+  q32.domain %>% 
+  group_by(TC3, X32) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q32.sum <- 
+  q32.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q32.domain.summary <- 
+  q32.domain.summary %>% 
+  left_join(q32.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X32)
 #### Pie chart ####
 PieDonut(q32_summay, 
          aes(X32, count= n), 
@@ -2000,6 +2194,19 @@ PieDonut(q32_summay,
          showRatioThreshold = F, 
          title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie1)
+
+#### plot - domain #### 
+
+ggplot(q32.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie1)+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Are there cloud services which you would like to be able to\naccess on the Alliance Cloud but currently cannot\n(e.g., Managed Kubernetes, Galaxy, Docker)?")
 
 #### Yes - specify ####
 q32.specify <- 
@@ -2048,6 +2255,26 @@ q39_summay <-
   group_by(X39) %>% 
   count()
 
+#add domain
+q39.domain <- 
+  q39%>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q39.domain.summary <- 
+  q39.domain %>% 
+  group_by(TC3, X39) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q39.sum <- 
+  q39.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q39.domain.summary <- 
+  q39.domain.summary %>% 
+  left_join(q39.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X39)
+
 #### Pie chart ####
 PieDonut(q39_summay, 
          aes(X39, count= n), 
@@ -2061,6 +2288,19 @@ PieDonut(q39_summay,
 
 
 
+
+#### plot - domain #### 
+
+ggplot(q39.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie_3)+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  ggtitle("Would it be helpful to have tools that track your cloud data\nstorage and remind you to back up or migrate content?")
 
 ### Q40 -  On top of the existing resources, which of the following technical support methods would you like to access? Check all that apply ######
 #### data cleaning & preparation ####
@@ -2145,7 +2385,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "bottom", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Exploring Technical Support Options for Additional Resources") +
   xlab("") + 
   ylab("")
