@@ -497,6 +497,47 @@ ggplot(TC3_Needs_sub1, aes(x=cloud, y=`%`, fill=answer2))+geom_col()+facet_grid(
   xlab("Services") + 
   ylab("") 
 
+
+### Q6 - Feel free to specify other services not listed in Question 5: ######
+
+#First, extract the possible answers in a new column
+q6 <- 
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X6) %>% 
+  unnest(X6)
+
+q6.specify <- read.csv("q6_clean.csv") %>% 
+  drop_na()
+
+#summarise
+q6.specify.summary <- 
+  q6.specify %>% group_by(answer_clean) %>% count() %>% 
+  drop_na() %>% arrange(-n)
+
+#to be used to reorder the plot values
+order <- as.data.frame(c(46:1))
+
+#add total n (sum) = to be used to calculate proportions
+sum <- sum(q6.specify.summary$n)
+
+#add proportions
+q6.specify.summary <- 
+  cbind(q6.specify.summary, order) %>% 
+  rename(order = 3) %>% 
+  mutate(sum = sum, Percentage = (n/sum)*100)
+
+#### Plot - yes - specify ####
+ggplot(q6.specify.summary, aes(x= reorder(answer_clean, order))) + 
+  geom_bar(aes(y=Percentage), stat= "identity") +
+  scale_fill_manual(values =  "#D6AB00") + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=Percentage, label= round(Percentage, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Support source for using Commercial Cloud") +
+  xlab("Source") + 
+  ylab("Proportion (%)")
+
+
 ### Q7 - For what purpose(s) do you use cloud services to support your research? ######
 #### data cleaning & preparation ####
 
@@ -683,7 +724,7 @@ ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Methods to interact with Cloud Services") +
   xlab("") +
   ylab("")
@@ -703,7 +744,7 @@ q10 <- survey_organized_spread %>%
 #Create a table with domain for TC3 by ID
 domain1 # n = 474
 
-#Organize q7 by adding all "other" answers together ##### 
+#Organize q10 by adding all "other" answers together ##### 
 q10_orga <- 
   q10 %>%
   filter(!factor == "Other") %>% 
@@ -787,7 +828,7 @@ ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) +
   ggtitle("Factors influencing choice of Cloud Platform") +
   xlab("") + 
   ylab("")
-fixed_plot_aspect()
+# fixed_plot_aspect()
 
 ### Q11 - Do your cloud needs include storing or processing controlled or sensitive data (e.g., data owned by First Nations, personal data, data subject to a data sharing agreement or specific security requirements)?? ######
 q11 <- 
@@ -800,7 +841,27 @@ q11_summay <-
   group_by(X11) %>% 
   count()
 
-#### Pie chart #### <<<<<< Let's breakdown that shows also the domain.
+#add domain
+q11.domain <- 
+  q11 %>% 
+  left_join(domain1, by = "Internal.ID")
+
+#group by domain and answer
+q11.domain.summary <- 
+  q11.domain %>% 
+  group_by(TC3, X11) %>% count() %>% drop_na()
+
+#calculate sum and add it
+q11.sum <- 
+  q11.domain.summary %>% group_by(TC3) %>% summarise(sum = sum(n))
+
+q11.domain.summary <- 
+  q11.domain.summary %>% 
+  left_join(q11.sum, by = "TC3") %>% 
+  mutate(Proportion = (n/sum)*100) %>% 
+  rename(Answer = X11)
+
+#### Pie chart #### 
 PieDonut(q11_summay, 
          aes(X11, count= n), 
          ratioByGroup = FALSE, 
@@ -811,6 +872,14 @@ PieDonut(q11_summay,
          title= "Do you currently, or have you in the past,\nuse(d) cloud resources to support your research?", 
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
 
+#### plot - domain #### 
+cb_pie_3 <- rep(c("#32322F","#B7B6B3", "#D6AB00"), 100)
+
+ggplot(q11.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
+  geom_bar(position="stack", stat="identity")+ 
+  scale_fill_manual(values =  cb_pie_3)+
+  theme(plot.title = element_text(size = 12, face = "bold"))+
+  ggtitle("Do your cloud needs include storing or processing controlled or sensitive data?")
 
 
 ### Q12 - Have you used a commercial cloud provider?? ######
