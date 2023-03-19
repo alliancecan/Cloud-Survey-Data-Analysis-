@@ -984,7 +984,7 @@ cb_pie2 <- rep(c("#D6AB00","#32322F"), 100)
 
 ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
-  # coord_flip()+
+  coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
         axis.text.x = element_text(size = 12),
@@ -1400,7 +1400,8 @@ q18.33.sum.flip <- q18.33.sum %>%
 
 ggplot(q18.33.sum, aes(fill=Question, y=n, x=answer)) + 
   geom_bar(position="fill", stat="identity")+
-  xlab("Answer") + ylab("Number of responses")+
+  coord_flip()+
+  xlab("Answer") + ylab("Proportion")+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
         axis.text.x = element_text(size = 15),
@@ -1544,6 +1545,7 @@ q20.35.sum.flip <- q20.35.sum.merged %>%
 #### Plot ####
 ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
+  coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
         axis.text.x = element_text(size = 15),
@@ -1600,6 +1602,7 @@ q21.36.sum.flip <- q21.36.sum.merged %>%
 #### Plot ####
 ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
   geom_bar(position="stack", stat="identity")+
+  coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
         axis.text.x = element_text(size = 15),
