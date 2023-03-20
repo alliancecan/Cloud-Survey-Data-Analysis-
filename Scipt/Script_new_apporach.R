@@ -283,20 +283,44 @@ Domain_Breakdown <- survey_organized_spread %>%
   unnest(X3) %>% 
   rename(Domain = X3)
 
+Domain_Breakdown$Domain[Domain_Breakdown$Domain == "Sciences humaines et arts"] <- "Humanities and the Arts "
 
 domain_new_table <- Domain_Breakdown
 
+domain_summary <- 
+  Domain_Breakdown %>% 
+  group_by(Domain) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+domain_summary1 <- 
+  domain_summary %>% 
+  mutate(TC3 = ifelse(Domain == "Natural Sciences ", "Sciences and Engineering", ifelse(
+    Domain == "Humanities and the Arts ", "Social Sciences and Humanities", ifelse(
+      Domain == "Social Sciences ", "Social Sciences and Humanities", ifelse(
+        Domain == "Engineering and Technology ", "Sciences and Engineering", ifelse(
+          Domain == "Medical, Health and Life Sciences ", "Health Research", "Sciences and Engineering"
+        ))))))
 
 #add domain
-q3.domain <- 
-  domain_new_table %>% 
-  left_join(domain1, by = "Internal.ID")
+domain1 <- 
+  Domain_Breakdown %>% 
+  left_join(domain_summary1, by = "Domain") %>% 
+  select(-n)
+
+q3.domain <- domain1
+#add domain
+# q3.domain <- 
+#   domain_new_table %>% 
+#   left_join(domain1, by = "Internal.ID")
 
 #group by domain
 q3.domain.summary <- 
   q3.domain %>% 
   group_by(TC3) %>% count() %>% drop_na()
 
+q3.domain.summary$TC3[q3.domain.summary$TC3 == "Social Sciences and Humanities"] <- "Social Sciences\nand Humanities"
 q3.domain.summary$TC3[q3.domain.summary$TC3 == "Social Sciences and Humanities"] <- "Social Sciences\nand Humanities"
 q3.domain.summary$TC3[q3.domain.summary$TC3 == "Sciences and Engineering"] <- "Sciences and\nEngineering"
 
@@ -766,7 +790,7 @@ ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Methods to interact with Cloud Services") +
   xlab("") +
   ylab("")
@@ -919,6 +943,7 @@ cb_pie_3 <- rep(c("#32322F","#B7B6B3", "#D6AB00"), 100)
 
 ggplot(q11.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
+  coord_flip()+
   scale_fill_manual(values =  cb_pie_3)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
@@ -975,6 +1000,7 @@ PieDonut(q12_summay,
 
 ggplot(q12.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
+  coord_flip()+
   scale_fill_manual(values =  cb_pie_3)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
@@ -1101,7 +1127,8 @@ ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) +
         axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 15))+
+        legend.title = element_text(size = 15),
+        legend.position = "left")+
   ggtitle("Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds\ndid your research group consume over the last calendar year on commercial\ncloud resources?")+
   xlab("Funds ($)") + ylab("Number of responses")
 
@@ -1156,8 +1183,9 @@ ggplot(q14_org_domain_summary, aes(fill=TC3, y=n, x=reorder(credits, sort))) +
         axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 15))+
-  ggtitle("Approximately how many dollars (CDN) of research funds did your research group\nspend over the last calendar year on commercial cloud resources?")+
+        legend.title = element_text(size = 15),
+        legend.position = "left")+
+  ggtitle("Approximately how many dollars (CDN) of research funds did your research\ngroup spend over the last calendar year on commercial\ncloud resources?")+
   xlab("Funds ($)") + ylab("Number of responses")
 
 #### plot Q13 & Q14####
@@ -1372,7 +1400,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Primary reason for using a commercial cloud") +
   xlab("") + 
   ylab("")
