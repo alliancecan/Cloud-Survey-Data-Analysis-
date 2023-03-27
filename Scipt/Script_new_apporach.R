@@ -23,18 +23,16 @@ library(ggthemes)
 
 ###Load the data
 
-#survey data, english and french versions
-survey <- read.csv("FINAL_Cloud_Survey_EN-FR_20220228.csv",
+#survey data, english and french versions merged together
+survey <- read.csv("MERGED_Cloud_Survey_EN-FR_20220228.csv",
                    header = T,
                    encoding = "UTF-8",
                    na.strings=c("","NA")) %>% 
   rename(Internal.ID = X.U.FEFF.Internal.ID)
 
-survey <- survey[c(-10,-12, -20, -21)] #delete columns "Other" and old "old please specify" have been reclassified into the "NEW_Other" column <<<<<<<< we need to name the columns, otherwise it is a bit confusing as to why or which
+#Delete no needed columns: Here columns 10, 12, 20, and 21 are for "Other please specify" which have been cleaned into new columns "Xn....New_Other". So no need to keep them in the table.
 
-#Questions <<<<< I don't think this is relevant.
-questions_n <- read.csv("Questions_n_EN_20230223.csv")#this table has the questions in rows (n=47)
-#To add the french version
+survey <- survey[c(-10,-12, -20, -21)] #delete columns "Other" and old "old please specify" have been reclassified into the "NEW_Other" column <<<<<<<< we need to name the columns, otherwise it is a bit confusing as to why or which
 
 # Organizing data ----------------------------------------------------------------
 
@@ -49,19 +47,13 @@ survey_organized <-
           "([[:alnum:]]+)..([[:graph:]]+)") %>% #This function separates question number and question (e.g., X1..Question => col1 = X1 | col2 = Question)
   drop_na(Answer)
 
-#Clean the questions: join the questions from table "questions_n" using the question's number "X.."
+#Keep columns Internal.ID, Ques_num and Answer
 survey_organized_clean <- 
   survey_organized %>% 
-  left_join(questions_n, by = "Ques_num")
-
-#Delete extra columns by selecting important ones: <<<<<<<<< not needed
-survey_organized_clean1 <- 
-  survey_organized_clean %>% 
-  select(Internal.ID, Ques_num, Answer) #@%>% 
-#rename (Internal.ID = X.U.FEFF.Internal.ID)
+  select(Internal.ID, Ques_num, Answer)
 
 #Spread the table: the output will have one column per question (in a list)
-survey_organized_spread <- pivot_wider(survey_organized_clean1, 
+survey_organized_spread <- pivot_wider(survey_organized_clean, 
                                        names_from = Ques_num,
                                        values_from = Answer,
                                        values_fn = list)
@@ -71,7 +63,7 @@ survey_organized_spread <- pivot_wider(survey_organized_clean1,
 ### Q1 - Please describe your role(s). ######
 
 #### data cleaning & preparation####
-#select questions X1 and X2
+#select questions X1 (role) and X2 (geography)
 survey_x1.x2_v1<- 
   survey_organized_spread %>% 
   select(Internal.ID, X1, X2) %>% 
@@ -92,28 +84,48 @@ survey_x1.x2_v2 <-
                     Role == "Government", Role, ifelse(
                       Role == "Librarian", Role, ifelse(
                         Role == "Otjer", "Other", ifelse(
-                          Role == "Researcher ", "Researcher", Role))))))))))))) # n = 12 unique roles
-survey_x1.x2_v2 <- unique(survey_x1.x2_v2)
+                          Role == "Researcher ", "Researcher", Role))))))))))))) %>% # n = 12 unique roles
+  unique()
 
-
-#Colour Scheme
+#General colour Scheme
 cbp1 <- rep(c("#B7B6B3", "#D6AB00","#00DBA7", "#56B4E9",
                        "#32322F", "#FBFAFA", "#D55E00", "#CC79A7"), 100)
                        
-## <<<<< NEed to create a new pie colour scheme for when we have many elements. This works well for yes, no, don't know                 
+#This to be used to plot the geographical location                      
+cbp_Cad <- rep(c("#B7B6B3", "#D6AB00","#00DBA7", "#56B4E9",
+                          "#32322F", "darkturquoise", "#D55E00", "#CC79A7",
+                          "green4", "lightslategrey"), 100)
+                          
+# This to be used for yes, no, not sure                 
 cb_pie <- rep(c("#32322F","#FBFAFA", "#D6AB00","#00DBA7", "#B7B6B3",
                          "#0072B2", "#D55E00", "#CC79A7"), 100)
                          
+# This to be used to plot the domains
+cb_pie_3 <- rep(c("#32322F","#B7B6B3", "#D6AB00"), 100)
+
+# Number of researchers-professors:
+survey_x1.x2_v3 <-
+  survey_x1.x2_v2 %>%
+  select(-Geography, -Role) %>%
+  filter(Role_n == "Professor" | Role_n == "Researcher")
+
+#keep only duplicated Internal.ID = those have more than one answer
+researcher_professor <- 
+  survey_x1.x2_v3[survey_x1.x2_v3$Internal.ID %in% survey_x1.x2_v3$Internal.ID[duplicated(survey_x1.x2_v3$Internal.ID)],]
+
+#n number of Professor_Researcher
+length(unique(researcher_professor$Internal.ID)) # n = 58
 
 #### summary table - Roles ####
-roles_summary <- 
-  survey_x1.x2_v2 %>% 
-  select(-Geography,) %>% 
-  group_by(Role_n) %>% 
-  count() %>% 
-  arrange(-n) %>% 
+roles_summary <-
+  survey_x1.x2_v2 %>%
+  select(Internal.ID,Role, Role_n) %>% 
+  group_by(Role_n) %>%
+  count() %>%
+  arrange(-n) %>%
   drop_na() %>%
   print()
+
 
 #### Pie chart - Roles #### <<< need to play with the colours
 
@@ -125,7 +137,7 @@ PieDonut(roles_summary,
          labelpositionThreshold=1, 
          showRatioThreshold = F, 
          title= "Respondents' roles", 
-         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie) #+ 
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cbp_Cad) #+ 
 
 ### Q2 - Please select which province or territory you are located in to access cloud services.. ######
 #### data cleaning & preparation - Demography ####
@@ -163,7 +175,7 @@ Ontario <- drop_na(Ontario)
 #### Bar graph for Role_n - Ontario #####
 ggplot(Ontario, aes(x = Role_n)) +
   geom_col(aes(y=n, fill=Role_n)) + 
-  # scale_fill_manual(values =  cbp1) +
+  scale_fill_manual(values =  cbp_Cad) +
   geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
   coord_flip() + 
   theme_linedraw() +
@@ -188,7 +200,7 @@ Quebec <- drop_na(Quebec)
 #### Bar graph for Role_n - Quebec ######
 ggplot(Quebec, aes(x = Role_n)) +
   geom_col(aes(y=n, fill=Role_n)) + 
-  # scale_fill_manual(values =  cbp1) +
+  scale_fill_manual(values =  cbp_Cad) +
   geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
   coord_flip() + 
   theme_linedraw() +
@@ -213,7 +225,7 @@ West$Role_n <- factor(West$Role_n, levels=unique(West$Role_n))
 #### Bar graph for Role_n - Western Canada ####
 ggplot(West, aes(x = Role_n)) +
   geom_col(aes(y=n, fill=Role_n)) + 
-  # scale_fill_manual(values =  cbp1) +
+  scale_fill_manual(values =  cbp_Cad) +
   geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
   coord_flip() + 
   theme_linedraw() +
@@ -237,7 +249,7 @@ East$Role_n <- factor(East$Role_n, levels=unique(East$Role_n))
 #### Bar graph for Role_n - Eastern Canada ####
 ggplot(East, aes(x = Role_n)) +
   geom_col(aes(y=n, fill=Role_n)) + 
-  # scale_fill_manual(values =  cbp1) +
+  scale_fill_manual(values =  cbp_Cad) +
   geom_text(aes(y=n, label= n), hjust= -0.35, vjust=0) +
   coord_flip() + 
   theme_linedraw() +
@@ -252,6 +264,7 @@ Canada <-survey_x1.x2_v2 %>%
   select(-Role_n, -Role) %>% 
   filter(!Geography %in% c("National", "Regional", "International")) %>% 
   unique() %>% 
+  mutate(Geography = ifelse(Geography == "Nouveau-Brunswick", "New Brunswick", Geography)) %>% 
   group_by(Geography) %>% 
   summarize(props = n()) %>%   
   arrange(props) %>%
@@ -262,17 +275,20 @@ Canada$Geography <- factor(Canada$Geography, levels = unique(Canada$Geography))
 
 #### Pie chart - All Canada ####
 #Comment: group ester provinces
-PieDonut(Canada, aes(Geography, count= props), ratioByGroup = FALSE, showPieName=FALSE, r0=0.25,r1=1,r2=1.4,start=pi/2,labelpositionThreshold=1, showRatioThreshold = F, title= "Respondents by Region", titlesize = 5) #+ 
+PieDonut(Canada, aes(Geography, count= props), ratioByGroup = FALSE, showPieName=FALSE, r0=0.25,r1=1,r2=1.4,start=pi/2,labelpositionThreshold=1, showRatioThreshold = F, title= "Respondents by Region", titlesize = 5) + 
+  scale_fill_manual(values =  cbp_Cad)
 
 #### Descending Bargraph
 ggplot(Canada, aes(x = reorder(Geography, props), y= props)) +
   geom_bar(stat="identity", aes(fill=Geography))+
   xlab("Province/Territory") + ylab("Number of respondents")+
   ggtitle("Number of respondents per province/territory")+
+  scale_fill_manual(values =  cbp_Cad) + 
   coord_flip()+
+  theme_linedraw(base_size = 18) +
   theme(legend.position = "none")
-  
-  
+
+
 # scale_fill_manual(values =  cbp1)
 
 
@@ -283,10 +299,9 @@ Domain_Breakdown <- survey_organized_spread %>%
   unnest(X3) %>% 
   rename(Domain = X3)
 
-Domain_Breakdown$Domain[Domain_Breakdown$Domain == "Sciences humaines et arts"] <- "Humanities and the Arts "
-
 domain_new_table <- Domain_Breakdown
 
+#summarise the data = count domain's n
 domain_summary <- 
   Domain_Breakdown %>% 
   group_by(Domain) %>% 
@@ -294,6 +309,7 @@ domain_summary <-
   arrange(-n) %>% 
   print()
 
+#### Group domains into TC3 ####
 domain_summary1 <- 
   domain_summary %>% 
   mutate(TC3 = ifelse(Domain == "Natural Sciences ", "Sciences and Engineering", ifelse(
@@ -303,44 +319,31 @@ domain_summary1 <-
           Domain == "Medical, Health and Life Sciences ", "Health Research", "Sciences and Engineering"
         ))))))
 
-#add domain
-domain1 <- 
+#Link TC3 to Internal.ID = this will be used for the rest of the analysis as we will analyse data by TC3
+domain <- 
   Domain_Breakdown %>% 
   left_join(domain_summary1, by = "Domain") %>% 
-  select(-n)
+  select(-n) # n = 474
 
-q3.domain <- domain1
-#add domain
-# q3.domain <- 
-#   domain_new_table %>% 
-#   left_join(domain1, by = "Internal.ID")
+domain1 <- 
+  domain %>% 
+  select(-Domain)
+
+q3.domain <- domain
 
 #group by domain
 q3.domain.summary <- 
   q3.domain %>% 
   group_by(TC3) %>% count() %>% drop_na()
 
-q3.domain.summary$TC3[q3.domain.summary$TC3 == "Social Sciences and Humanities"] <- "Social Sciences\nand Humanities"
+#for esthethis purposes, we add "\n" to long TC3 names and to domains so they the names will fully appear in the pie charts
 q3.domain.summary$TC3[q3.domain.summary$TC3 == "Social Sciences and Humanities"] <- "Social Sciences\nand Humanities"
 q3.domain.summary$TC3[q3.domain.summary$TC3 == "Sciences and Engineering"] <- "Sciences and\nEngineering"
-
-
-#### summary table - Domain ####
-domain_summary <- 
-  Domain_Breakdown %>% 
-  group_by(Domain) %>% 
-  count() %>% 
-  arrange(-n) %>% 
-  print()
-
-#### Pie chart - ####
-domain_summary1 <- 
-  domain_summary
 
 domain_summary1$Domain[domain_summary1$Domain == "Agricultural and Veterinary Sciences "] <- "Agricultural and\nVeterinary Sciences"
 domain_summary1$Domain[domain_summary1$Domain == "Medical, Health and Life Sciences "] <- "Medical, Health\nand Life Sciences"
 
-
+#### Pie charts ####
 PieDonut(domain_summary1, 
          aes(Domain, count= n), 
          ratioByGroup = FALSE, 
@@ -361,35 +364,6 @@ PieDonut(q3.domain.summary,
          title= "Respondents' roles", 
          titlesize = 5)+
   scale_fill_manual(values =  cbp1)
-
-#### Bar Graph ####
-
-ggplot(domain_summary, aes(x = reorder(Domain, -n), y= n)) +
-  geom_bar(stat="identity", aes(fill=Domain))
-
-
-# Nested Domain-Role
-roles_df <- 
-  survey_x1.x2_v2 %>% 
-  select(-Geography, -Role,) %>% #select ony roles and ID
-  unique()
-
-#join roles and domains based on the IDs
-roles_domain <- 
-  full_join(roles_df, domain_new_table, by = "Internal.ID") ### <<<<<<<<<<<<< No new table?
-
-roles_domain_summary <- 
-  roles_domain %>% 
-  group_by(Role_n, Domain) %>% 
-  count() %>% 
-  arrange(-n) %>% 
-  print()
-
-#This piechart is a mess
-# PieDonut(roles_domain, aes(Role_n, Domain_n), color= "white",addPieLabel = TRUE, showPieName=F, r0=0.0,r1=0.8,r2=1.4,start=pi/2, showRatioThreshold = F, title= "Breakdown of Respondents by academic position", donutLabelSize = 4, titlesize =6) 
-
-ggplot(roles_domain_summary, aes(fill=Role_n, y=n, x=Domain)) + 
-  geom_bar(position="stack", stat="identity")
 
 ### Q4 - Do you currently, or have you in the past, use(d) cloud resources ######
 q4 <- 
@@ -415,11 +389,11 @@ PieDonut(q4_summay,
 
 
 ### Q5 - Please indicate how important these cloud services are to support your research ######
-glimpse(survey_organized_clean)
 
-#First, extract the possible answers in a new column
+##Data cleaning
+#First, extract all possible answers into a new column
 q5 <- 
-  survey_organized_clean %>% 
+  survey_organized %>% 
   filter(Ques_num == "X5")
 
 #Second, replace "." by "//"
@@ -427,7 +401,7 @@ q5 <-
   q5 %>% 
   mutate(Ques_num1 = gsub('[.]', '/', q5$Ques))
 
-#Then separate the answer from the question
+#Then separate the answer from the question using "//"
 q5_ord <- 
   q5 %>% 
   separate(Ques_num1, 
@@ -440,7 +414,7 @@ q5_ord <-
   mutate(b = gsub('[/]', ' ', q5_ord$b)) %>% #replace "/" by a space
   select(-a)
 
-#Now it data cleaning time!
+#Final data cleaning = edit the names
 q5_ord_cs <- 
   q5_ord %>% 
   mutate(cloud_service = ifelse(b =="Alliance Cloud", "Alliance Cloud (formerly Compute Canada Cloud)",
@@ -454,8 +428,7 @@ q5_ord_cs <-
                                                                                  ifelse(b=="Institutional cloud offering", "Institutional cloud offering", NA))))))))))
 #Select most important variables
 q5_ord_cs <- 
-  q5_ord_cs %>% select(Internal.ID, Question, cloud_service, Answer) #%>% 
-# rename(Internal.ID = Internal.ID)
+  q5_ord_cs %>% select(Internal.ID, Ques_num, cloud_service, Answer)
 
 #Add scaling 2 1 0 -1 -2
 q5_ord_cs_clean <- 
@@ -466,53 +439,29 @@ q5_ord_cs_clean <-
       Answer == 1, -2, ifelse(
         Answer == 4, 1, ifelse(
           Answer == 3, 0, ifelse(
-            Answer == 2, -1, "Verify")))))) #Added verify to see if I missed info, but no missed info
+            Answer == 2, -1, "Verify")))))) #Added "verify" to see make sure all answers were selected
+
+unique(q5_ord_cs_clean$Answer) # no missed answer
 
 q5_ord_cs_clean <- 
   q5_ord_cs_clean %>% 
-  select(Internal.ID, cloud_service, Answer_clean)
+  select(Internal.ID, cloud_service, Answer_clean, Answer)
 
-
-#### Add TC3 ####
-# 
-# 
-# #delete "\n" that was used to one can read the TC3 on the piechart on Q3
-# domain_summary$Domain[domain_summary$Domain == "Agricultural and\n Veterinary Sciences"] <- "Agricultural and Veterinary Sciences"
-# domain_summary$Domain[domain_summary$Domain == "Medical, Health and\nLife Sciences"] <- "Medical, Health and Life Sciences"
-
-#add the TC3 <<<<<<<<<<<<<<<<<<<<<< Engineering is NSERC // Natural Sciences is CIHR //  added a . in humanities. Also NSERC at the end for veterinary sciences.
-#
-domain_summary1 <- 
-  domain_summary %>% 
-  mutate(TC3 = ifelse(Domain == "Natural Sciences ", "Sciences and Engineering", ifelse(
-    Domain == "Humanities and the Arts ", "Social Sciences and Humanities", ifelse(
-      Domain == "Social Sciences ", "Social Sciences and Humanities", ifelse(
-        Domain == "Engineering and Technology ", "Sciences and Engineering", ifelse(
-          Domain == "Medical, Health and Life Sciences ", "Health Research", "Sciences and Engineering"
-        ))))))
-
-#join the domain summary table to the domain table = domain_summary1 contains the total n per domain. <<<<<<<<<<<< no domain_new_table
-domain_new_table1 <- 
-  domain_new_table %>% 
-  left_join(domain_summary1, by = "Domain")
-
-
+#Link TC3 to q5
 domain.cloud.s <- 
   q5_ord_cs_clean %>% 
-  left_join(domain_new_table1, by = "Internal.ID") %>% 
-  select(-n)
+  left_join(domain, by = "Internal.ID") %>% 
+  unique()
 
-#Not sure if this need to be reused as Domain column has been cleaned. try: "unique(domain.cloud.s$Domain)" = 7 unique domains vs three in the next function
-# domain.cloud.s$TC3 <- recode_factor(domain.cloud.s$TC3, CIHR = "Health Research",
-#                             NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
-
+#as tibble
 domain.cloud.s <- as_tibble(domain.cloud.s)
 
+#prepare data for the graph
 Workfl <- 
   domain.cloud.s %>% 
-  select(Internal.ID, cloud_service, Answer_clean, TC3) %>% 
-  rename(cloud = cloud_service, answer = Answer_clean) %>% 
-  group_by(TC3, cloud, answer)%>%
+  select(Internal.ID, cloud_service, Answer_clean, Answer, TC3) %>% 
+  rename(cloud = cloud_service, order = Answer, answer = Answer_clean) %>% 
+  group_by(TC3, cloud, order, answer)%>%
   summarize(n= n()) %>% 
   drop_na() %>% 
   as.tibble() %>% 
@@ -535,8 +484,14 @@ Workfl1 <-
 #add %
 TC3_Needs_sub <- mutate(Workfl1, "%" = (n/group_n)*100)
 
-#Need to replace A, B, D, D and E
-TC3_Needs_sub1 <- arrange(TC3_Needs_sub, TC3, cloud, answer)
+#Add legend "No importance" to "Very important"
+# TC3_Needs_sub1 <- arrange(TC3_Needs_sub, TC3, cloud, order, answer)
+# TC3_Needs_sub1 <- TC3_Needs_sub1 %>% 
+#   mutate(answer2 = ifelse(answer == 2, "Very important", ifelse(
+#     answer == 1, "Important", ifelse(
+#       answer == 0, "Average", ifelse(
+#         answer == -1, "Little importance", "No importance")))))
+
 TC3_Needs_sub1 <- TC3_Needs_sub1 %>% 
   mutate(answer2 = ifelse(answer == 2, "A", ifelse(
     answer == 1, "B", ifelse(
@@ -547,13 +502,14 @@ TC3_Needs_sub1 <-
   TC3_Needs_sub1 %>% 
   mutate(`%` = round(`%`))
 
-#Note: add as factor = answer
-
+#Reorder data by level of importance 
 
 ### Likert Graph on Cloud importance by TRC ####
 likert_color <- c("#2166AC", "#92C5DE", "#d3d3d3","#F4A582", "#B2182B")
 
-ggplot(TC3_Needs_sub1, aes(x=cloud, y=`%`, fill=answer2))+geom_col()+facet_grid(rows=vars(TC3)) + 
+ggplot(TC3_Needs_sub1, aes(x=cloud, y= `%`, fill= answer2))+
+  geom_col()+
+  facet_grid(rows=vars(TC3)) + 
   scale_fill_manual(values =  likert_color) + 
   geom_hline(yintercept = 50, linetype="dotted", color = "black", size=.75) +
   coord_flip() +
@@ -566,7 +522,7 @@ ggplot(TC3_Needs_sub1, aes(x=cloud, y=`%`, fill=answer2))+geom_col()+facet_grid(
 
 ### Q6 - Feel free to specify other services not listed in Question 5: ######
 
-#First, extract the possible answers in a new column
+#First, extract all answers in a new column
 q6 <- 
   survey_organized_spread %>% # n = 507
   select(Internal.ID, X6) %>% 
@@ -581,7 +537,7 @@ q6.specify.summary <-
   drop_na() %>% arrange(-n)
 
 #to be used to reorder the plot values
-order <- as.data.frame(c(46:1))
+order <- as.data.frame(c(nrow(q6.specify.summary):1))
 
 #add total n (sum) = to be used to calculate proportions
 sum <- sum(q6.specify.summary$n)
@@ -597,7 +553,7 @@ ggplot(q6.specify.summary, aes(x= reorder(answer_clean, order))) +
   geom_bar(aes(y=Percentage), stat= "identity") +
   scale_fill_manual(values =  "#D6AB00") + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=Percentage, label= round(Percentage, digits = 0))) +
-  theme_linedraw(base_size = 18) +
+  theme_linedraw(base_size = 15) +
   theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Support source for using Commercial Cloud") +
   xlab("Source") + 
@@ -607,30 +563,16 @@ ggplot(q6.specify.summary, aes(x= reorder(answer_clean, order))) +
 ### Q7 - For what purpose(s) do you use cloud services to support your research? ######
 #### data cleaning & preparation ####
 
-glimpse(survey_organized_clean)
-
 #extract question 7
 q7 <- survey_organized_spread %>% 
   select(Internal.ID, X7) %>% 
   unnest(X7) %>% 
   rename(purpose = X7)
 
-#Create a table with domain for TC3 by ID
-domain <- 
-  domain_new_table1 %>% 
-  select(-Domain, -n)
-
-domain1 <- domain
-
-#### domain1$TC3 <-
-####  recode_factor(domain1$TC3, CIHR = "Health Research",
-###            NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
-
-
 #Organize q7 by adding all "other" answers together
 q7_orga <- 
   q7 %>% 
-  filter(!purpose == "Other") %>% #Other is an invalid answer, keeping it will add extra false answers as they are previsouly "Other (Please specify)"
+  filter(!purpose == "Other") %>% #Other is an invalid answer, keeping it will add extra false answers as they are "Other (Please specify)"
   mutate(answer =
            ifelse(purpose == "Cloud storage (i.e., OneDrive, Dropbox, Google Drive, Sync, etc.)", "Cloud storage", ifelse(
              purpose == "High-performance computing capabilities", purpose, ifelse(
@@ -658,19 +600,17 @@ q7.domain <-
   q7_orga %>% 
   left_join(domain1, by = "Internal.ID") %>% 
   select(-purpose) %>% 
+  unique() %>% 
   print() ## n = 362 = unique(Internal.ID)
-
-
-Workflow.q7 <- q7.domain
 
 Workflow.q7 <- 
   q7.domain %>% 
-  mutate(TC3 = replace_na(Workflow.q7$TC3, "Other")) %>% 
-  unique()
+  drop_na() %>% #delete TC3 = NA = those did not specify their domain field
+  print()
 
-nHR <- filter(Workflow.q7, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #202
-nSE <- filter(Workflow.q7, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#66
-nSSH <- filter(Workflow.q7, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #165
+nHR <- filter(Workflow.q7, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
+nSE <- filter(Workflow.q7, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#193
+nSSH <- filter(Workflow.q7, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #113
 
 
 
@@ -717,8 +657,6 @@ q9 <- survey_organized_spread %>%
   unnest(X9) %>% 
   rename(method = X9) # n = 363
 
-#Create a table with domain for TC3 by ID
-domain1 # n = 474 = unique(Internal.ID)
 
 #Organize q7 by adding all "other" answers together
 q9_orga <- 
@@ -759,9 +697,9 @@ Workflow.q9 <-
   q9.domain %>% 
   unique()
 
-nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #200
-nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#66
-nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #164
+nHR <- filter(Workflow.q9, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #113
+nSE <- filter(Workflow.q9, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#192
+nSSH <- filter(Workflow.q9, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #112
 
 Workflow_Health <- filter(Workflow.q9, TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
@@ -859,7 +797,7 @@ Workflow.q10 <-
 
 nHR <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
 nSE <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
-nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #105
+nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
 
 
 Workflow_Health <- filter(Workflow.q10, TC3=="Health Research") %>%
@@ -894,7 +832,7 @@ ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) +
   ggtitle("Factors influencing choice of Cloud Platform") +
   xlab("") + 
   ylab("")
-# fixed_plot_aspect()
+
 
 ### Q11 - Do your cloud needs include storing or processing controlled or sensitive data (e.g., data owned by First Nations, personal data, data subject to a data sharing agreement or specific security requirements)?? ######
 q11 <- 
@@ -939,7 +877,6 @@ PieDonut(q11_summay,
          titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
 
 #### plot - domain #### 
-cb_pie_3 <- rep(c("#32322F","#B7B6B3", "#D6AB00"), 100)
 
 ggplot(q11.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
@@ -1024,8 +961,8 @@ q12.28.summary <-
   q12.28 %>% group_by(Question, answer) %>% count() %>% 
   drop_na()
 
-q12.28.summary$Question[q12.28.summary$Question == "X12"] <- "Have you used a commercial cloud provider?"
-q12.28.summary$Question[q12.28.summary$Question == "X28"] <- "Have you used the Alliance Community Cloud?"
+q12.28.summary$Question[q12.28.summary$Question == "X12"] <- "Question 12"
+q12.28.summary$Question[q12.28.summary$Question == "X28"] <- "Question 28"
 q12.28.summary$answer[q12.28.summary$answer == "No "] <- "No"
 q12.28.summary$answer[q12.28.summary$answer == "Yes "] <- "Yes"
 q12.28.summary$answer[q12.28.summary$answer == "Not sure "] <- "Not sure"
@@ -1043,9 +980,9 @@ q12.28.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q12.28.summary.flip <- q12.28.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "Have you used a commercial cloud provider?",
+  mutate(new_n = ifelse(Question == "Question 12",
                         -1*proportion, proportion))
-  
+
 #ggplot comparing answers
 cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
 cb_pie2 <- rep(c("#D6AB00","#32322F"), 100)
@@ -1055,25 +992,16 @@ ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=answer)) +
   coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
-        axis.text.x = element_text(size = 12),
+        axis.text.x = element_text(size = 15),
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
-  scale_fill_manual(values =  cb_pie1)
-  
-
-
-# #ggplot comparing questions
-# ggplot(q12.28.summary, aes(fill=answer, y=n, x=Question)) + 
-#   geom_bar(position="fill", stat="identity")+ scale_fill_manual(values =  cb_pie)
-# 
-# 
-# ggplot(q12.28.summary, aes(x=answer, y=n, fill=Question)) + 
-#   geom_bar(stat="identity", position="identity")+
-#   coord_flip()
-
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 ### Q13 - HApproximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
 q13 <- 
@@ -1097,7 +1025,7 @@ q13_summay <-
 
 q13_org_domain <- 
   q13_org %>% 
-  left_join(domain_new_table1, by = "Internal.ID") %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
   select(-X13)
 
 
@@ -1129,6 +1057,7 @@ ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) +
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15),
         legend.position = "left")+
+  theme_linedraw(base_size = 12) +
   ggtitle("Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds\ndid your research group consume over the last calendar year on commercial\ncloud resources?")+
   xlab("Funds ($)") + ylab("Number of responses")
 
@@ -1155,7 +1084,7 @@ q14_summay <-
 
 q14_org_domain <- 
   q14_org %>% 
-  left_join(domain_new_table1, by = "Internal.ID") %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
   select(-X14)
 
 
@@ -1178,90 +1107,81 @@ q14_org_domain_summary <-
 ggplot(q14_org_domain_summary, aes(fill=TC3, y=n, x=reorder(credits, sort))) + 
   geom_bar(position="stack", stat="identity")+ 
   scale_fill_manual(values =  cbp1)+
-  theme(plot.title = element_text(size = 18, face = "bold"),
-        axis.title = element_text(size = 15),
+  theme(plot.title = element_text(size = 12, face = "bold"),
+        axis.title = element_text(size = 12),
         axis.text.x = element_text(size = 8),
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 15),
+        legend.title = element_text(size = 12),
         legend.position = "left")+
+  theme_linedraw(base_size = 12) +
   ggtitle("Approximately how many dollars (CDN) of research funds did your research\ngroup spend over the last calendar year on commercial\ncloud resources?")+
   xlab("Funds ($)") + ylab("Number of responses")
 
 #### plot Q13 & Q14####
+q13.14 <-
+  survey_organized_spread %>% # n = 507
+  select(Internal.ID, X13, X14) %>%
+  unnest(c(X13, X14)) %>%
+  gather("Question", "answer", 2:3)
+
+q13.14$Question[q13.14$Question == "X13"] <- "Question 13"
+q13.14$Question[q13.14$Question == "X14"] <- "Question 14"
+
+# summarise data
+
 # q13.14 <-
-#   survey_organized_spread %>% # n = 507
-#   select(Internal.ID, X13, X14) %>%
-#   unnest(c(X13, X14)) %>% 
-#   gather("Question", "answer", 2:3) 
-# 
-# q13.14$Question[q13.14$Question == "X13"] <- "Approximately how many dollars (CDN) in cloud credits or vendor\nin-kind funds did your research group consume over the\nlast calendar year on commercial cloud resources?"
-# q13.14$Question[q13.14$Question == "X14"] <- "Approximately how many dollars (CDN) of research funds did your\nresearch group spend over the last calendar year on\ncommercial cloud resources?"
-# 
-# #summarise data
-# 
-# q13.14 <- 
-#   q13.14 %>% 
-#   left_join(domain_new_table1, by = "Internal.ID") 
-# 
-# q13.14.summary <- 
-#   q13.14 %>% group_by(TC3, Question, answer) %>% count() %>% 
-#   drop_na()
-# 
-# #sum
-# q13.14.sum <- 
-#   q13.14.summary %>% group_by(TC3, Question) %>% summarise(sum = sum(n))
-# 
-# #merge sum table to summary table
-# 
-# q13.14.sum.merged <- 
-#   q13.14.summary %>% 
-#   left_join(q13.14.sum, by = "Question") %>% 
-#   mutate(proportion = (n/sum)*100)
-# 
-# #Add negative values to create the mirror barplot graph
-# q13.14.sum.flip <- q13.14.sum.merged %>% 
-#   mutate(new_n = ifelse(Question == "Which of the following functions have you used the commercial cloud for?",
-#                         -1*proportion, proportion))
-# 
-# 
-# ggplot(q13.14.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
-#   geom_bar(position="stack", stat="identity")+
-#   coord_flip()+
-#   xlab("Answer") + ylab("Number of responses")+
-#   theme(plot.title = element_text(size = 18, face = "bold"),
-#         axis.title = element_text(size = 15),
-#         axis.text.x = element_text(size = 15),
-#         axis.text.y = element_text(size = 12),
-#         legend.text = element_text(size = 12),
-#         legend.title = element_text(size = 15))+
-#   xlab("Answer") + ylab("Proportion")+
-#   ggtitle("Commercial cloud vs Alliance Community cloud")+
-#   scale_fill_manual(values =  cb_pie2)
-# 
-
-
-# q13.14_org <-
 #   q13.14 %>%
-#   mutate(credits.x13 = ifelse(
-#     X14 == "$0 ","$0", X13),
-#     credits.x14 = ifelse(
-#       X14 == "$0 ","$0", X14)) %>%
-#   select(-X13, -X14) # n = 218
-# 
-# 
-# 
-# q13.14_summay <-
-#   q13.14_org %>%
-#   group_by(credits.x13, credits.x14) %>%
-#   count() %>%
-#   arrange(-n) %>%
-#   print() # n = 218
-# 
-# #bar plot
-# ggplot(q13.14_summay, aes(fill=answer, y=n, x=Question)) +
-#   geom_bar(position="fill", stat="identity")+
-#   ggtitle("")
+#   left_join(domain1, by = "Internal.ID")
+
+q13.14.summary <-
+  q13.14 %>% group_by( Question, answer) %>% count() %>%
+  drop_na()
+
+# sum
+q13.14.sum <-
+  q13.14.summary %>% group_by(Question) %>% summarise(sum = sum(n))
+
+# merge sum table to summary table
+
+q13.14.sum.merged <-
+  q13.14.summary %>%
+  left_join(q13.14.sum, by = "Question") %>%
+  mutate(proportion = (n/sum)*100)
+
+# Add negative values to create the mirror barplot graph
+q13.14.sum.flip <- q13.14.sum.merged %>%
+  mutate(new_n = ifelse(Question == "Question 13",
+                        -1*proportion, proportion))
+
+#Add sorting values to arrange the graph
+q13.14.sum.flip1 <- 
+  q13.14.sum.flip %>% 
+  mutate(sort = ifelse(
+    answer == "$0 ", 1, ifelse(
+      answer == "< $1000", 2, ifelse(
+        answer == "$1000 - $5000", 3, ifelse(
+          answer == "$5000 - $50000", 4, ifelse(
+            answer == "$50000 - $100000", 5, ifelse(
+              answer == "> $100000", 6, 7))))))) %>%  #arrange the data
+  
+  print()
+
+
+ggplot(q13.14.sum.flip1, aes(fill=Question, y=new_n, x=reorder(answer, -sort))) +
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
+  xlab("Answer") + ylab("Number of responses")+
+  theme(plot.title = element_text(size = 18, face = "bold"),
+        axis.title = element_text(size = 15),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 12),
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 15))+
+  xlab("Answer") + ylab("Proportion")+
+  ggtitle("Commercial cloud vs Alliance Community cloud")+
+  scale_fill_manual(values =  cb_pie2)
+
 
 ### Q15 - How is your commercial cloud budget funded? ######
 q15 <- 
@@ -1279,12 +1199,11 @@ q15$X15[q15$X15 == "Startup grant"] <- "Industry grants or funding "
 q15$X15[q15$X15 == "aucun"] <- NA
 q15$X15[q15$X15 == "ne s'applique pas"] <- NA
 q15$X15[q15$X15 == "N/A"] <- NA
-q15$X15[q15$X15 == "vendor inkinds, philanthropy"] <- "Industry grants or funding "
-q15$X15[q15$X15 == "vendor inkinds, philanthropy"] <- "Industry grants or funding "
+q15$X15[q15$X15 == "vendor inkinds, philanthropy"] <- "Research grants "
 q15$X15[q15$X15 == "Its bundled in with our overall storage for the University"] <- "Institutionally "
 
 q15 <- q15 %>% drop_na()
-  
+
 #link TC3 to q15 IDs
 q15.domain <- 
   q15 %>% 
@@ -1301,8 +1220,8 @@ Workflow.q15 <-
   unique()
 
 nHR <- filter(Workflow.q15, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #72
-nSE <- filter(Workflow.q15, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#106
-nSSH <- filter(Workflow.q15, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #59
+nSE <- filter(Workflow.q15, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#102
+nSSH <- filter(Workflow.q15, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #64
 
 
 
@@ -1351,7 +1270,7 @@ to_filter <- q16 %>% group_by(X16) %>% count()
 q16 <- 
   q16 %>% 
   left_join(to_filter, by = "X16")
-  
+
 q16 <- 
   q16 %>% 
   mutate(answer = ifelse(
@@ -1369,8 +1288,8 @@ q16.domain <-
 Workflow.q16 <- q16.domain
 
 nHR <- filter(Workflow.q16, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #75
-nSE <- filter(Workflow.q16, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#116
-nSSH <- filter(Workflow.q16, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #257
+nSE <- filter(Workflow.q16, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#112
+nSSH <- filter(Workflow.q16, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #71
 
 
 
@@ -1410,7 +1329,7 @@ q17 <-
   survey_organized_spread %>% # n = 507
   select(Internal.ID, X17) %>% 
   unnest(X17) %>% 
-  filter(!X17 == "Other") # n = 210
+  filter(!X17 == "Other") # n = 196
 
 #add other unique answer (other) together
 to_filter <- q17 %>% group_by(X17) %>% count()
@@ -1434,7 +1353,7 @@ q17.org <-
                               X17 == "gestion de versions, codes", "Shared filesystem ", ifelse(
                                 X17 == "probably other aspects too, but I don't do this personally", "Other", ifelse(
                                   X17 == "simultaneous wireless syncing from desktop or phone to web", "Other", X17)
-                                )))))))))))))))) %>% 
+                              )))))))))))))))) %>% 
   drop_na() %>% 
   select(-X17)
 
@@ -1450,8 +1369,8 @@ q17.domain <-
 Workflow.q17 <- q17.domain
 
 nHR <- filter(Workflow.q17, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #69
-nSE <- filter(Workflow.q17, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#109
-nSSH <- filter(Workflow.q17, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #59
+nSE <- filter(Workflow.q17, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#106
+nSSH <- filter(Workflow.q17, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #64
 
 
 
@@ -1481,7 +1400,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "bottom", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("What components of the commercial cloud do you use?") +
   xlab("") + 
   ylab("")
@@ -1505,15 +1424,6 @@ q18.33.y.n <-
 q18.33.y.n$Question[q18.33.y.n$Question == "X18"] <- "Question 18"
 q18.33.y.n$Question[q18.33.y.n$Question == "X33"] <- "Question 33"
 
-# #summarise data
-# q18.33.sum <- 
-#   q18.33.y.n %>% group_by(Question, answer) %>% count() %>% 
-#   drop_na()
-# 
-# #Add negative values to create the mirror barplot graph
-# q18.33.sum.flip <- q18.33.sum %>% 
-#   mutate(new_n = ifelse(Question == "Question 18",
-#                         -1*n, n))
 #summarise data
 q18.33.summary <- 
   q18.33.y.n %>% group_by(Question, answer) %>% count() %>% 
@@ -1546,9 +1456,12 @@ ggplot(q18.33.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Data storing")+
-  scale_fill_manual(values =  cb_pie2)
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 #### Yes - specify ####
 q18.33.specify <- 
@@ -1566,13 +1479,13 @@ q19 <-
   survey_organized_spread %>% 
   select(Internal.ID, X19) %>% 
   unnest(X19)
-  
-  q34 <- 
-    survey_organized_spread %>% 
-    select(Internal.ID, X34) %>% 
+
+q34 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X34) %>% 
   unnest(X34)
 
-  
+
 q19.34 <- 
   full_join(q19, q34, by = "Internal.ID") %>% 
   gather("Question", "answer", 2:3) %>% 
@@ -1594,34 +1507,13 @@ q19.34.org <-
             answer == "Storing research data, no sharing involved", answer, ifelse(
               answer == "Sharing research data with collaborators only", answer, ifelse(
                 answer == "Other", "Other sharing activity", "Specified"
-                )))))))) %>% 
+              )))))))) %>% 
   drop_na()
 
 q19.34.org <- 
   q19.34.org %>% 
   filter(!answer_n == "Specified") # n = 341
 
-
-# #summarise data
-# q19.34.summary <- 
-#   q19.34.org %>% group_by(Question, answer_n) %>% count() %>% 
-#   drop_na()
-# 
-# #sum
-# q19.34.sum <- 
-#   q19.34.summary %>% group_by(Question) %>% summarise(sum = sum(n))
-# 
-# #merge sum table to summary table
-# 
-# q19.34.sum.merged <- 
-#   q19.34.summary %>% 
-#   left_join(q19.34.sum, by = "Question") %>% 
-#   mutate(proportion = (n/sum)*100)
-# 
-# #Add negative values to create the mirror barplot graph
-# q19.34.sum.flip <- q19.34.sum.merged %>% 
-#   mutate(new_n = ifelse(Question == "Which of the following functions have you used the commercial cloud for?",
-#                         -1*proportion, proportion))
 
 #summarise data
 q19.34.summary <- 
@@ -1656,10 +1548,12 @@ ggplot(q19.34.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15),
         legend.position = "right")+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("")+
-  scale_fill_manual(values =  cb_pie2)
-
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 
 ### Q20 & Q35 ######
@@ -1698,9 +1592,15 @@ q20.35.sum.flip <- q20.35.sum.merged %>%
   mutate(new_n = ifelse(Question == "Question 20",
                         -1*proportion, proportion))
 
+q20.35.sum.flip <- 
+  q20.35.sum.flip %>% 
+  mutate(levels = ifelse(
+    answer == "Yes", 1, ifelse(
+      answer == "No", 2, 3
+    )))
 
 #### Plot ####
-ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=reorder(answer, -levels))) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
@@ -1710,8 +1610,11 @@ ggplot(q20.35.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
   xlab("Answer") + ylab("Proportion")+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Commercial cloud vs Alliance Community cloud")+
-  scale_fill_manual(values =  cb_pie2)
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 
 ### Q21 & Q36 ######
@@ -1724,8 +1627,8 @@ q21.36 <-
 
 
 #Change replace X21 and X36 by the questions
-q21.36$Question[q21.36$Question == "X21"] <- "Do you need to securely share data stored on the commercial cloud\nwith specific collaborators?"
-q21.36$Question[q21.36$Question == "X36"] <- "Do you need to securely share data stored on the Alliance\ncloud-specific collaborators?"
+q21.36$Question[q21.36$Question == "X21"] <- "Question 21"
+q21.36$Question[q21.36$Question == "X36"] <- "Question 36"
 q21.36$answer[q21.36$answer == "No "] <- "No"
 q21.36$answer[q21.36$answer == "Yes "] <- "Yes"
 q21.36$answer[q21.36$answer == "Not sure "] <- "Not sure"
@@ -1752,7 +1655,7 @@ q21.36.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q21.36.sum.flip <- q21.36.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "Do you need to securely share data stored on the commercial cloud\nwith specific collaborators?",
+  mutate(new_n = ifelse(Question == "Question 21",
                         -1*proportion, proportion))
 
 
@@ -1766,9 +1669,11 @@ ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("The need to securely share data on clouds")+
-  scale_fill_manual(values =  cb_pie2)
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 
 
@@ -1790,8 +1695,8 @@ q22.37 <-
   unique() # n = 256
 
 #Change replace X22 and X37 by the questions
-q22.37$Question[q22.37$Question == "X22"] <- "How do you transfer the data stored on the commercial cloud?"
-q22.37$Question[q22.37$Question == "X37"] <- "How do you transfer the data stored on the Alliance Cloud?"
+q22.37$Question[q22.37$Question == "X22"] <- "Question 22"
+q22.37$Question[q22.37$Question == "X37"] <- "Question 37"
 q22.37$answer[q22.37$answer == "Automatically using software (i.e., Globus)"] <- "Automatically using software (e.g., Globus)"
 q22.37$answer[q22.37$answer == "Manually using software (i.e., Globus)"] <- "Manually using software (e.g., Globus)"
 
@@ -1814,7 +1719,7 @@ q22.37.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q22.37.sum.flip <- q22.37.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "How do you transfer the data stored on the commercial cloud?",
+  mutate(new_n = ifelse(Question == "Question 22",
                         -1*proportion, proportion))
 
 #### Plot ####
@@ -1827,9 +1732,12 @@ ggplot(q22.37.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Data transfer")+
-  scale_fill_manual(values =  cb_pie2)
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 
 ### Q23 & Q38 ######
@@ -1848,8 +1756,8 @@ q23.38.y.n <-
   filter(answer == "Yes" | answer == "No" | answer == "Not sure") # n = 237
 
 #Change replace X23 and X38 by the questions
-q23.38.y.n$Question[q23.38.y.n$Question == "X23"] <- "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?"
-q23.38.y.n$Question[q23.38.y.n$Question == "X38"] <- "Do you have any concerns about storing data on the Alliance Cloud\n(e.g., safety/security, backups)?"
+q23.38.y.n$Question[q23.38.y.n$Question == "X23"] <- "Question 23"
+q23.38.y.n$Question[q23.38.y.n$Question == "X38"] <- "Question 38"
 
 #summarise data
 q23.38.summary <- 
@@ -1869,12 +1777,18 @@ q23.38.sum.merged <-
 
 #Add negative values to create the mirror barplot graph
 q23.38.sum.flip <- q23.38.sum.merged %>% 
-  mutate(new_n = ifelse(Question == "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?",
+  mutate(new_n = ifelse(Question == "Question 23",
                         -1*proportion, proportion))
 
 #### Mirror Plot- Yes - No####
+q23.38.sum.flip <- 
+  q23.38.sum.flip %>% 
+  mutate(levels = ifelse(
+    answer == "Yes", 1, ifelse(
+      answer == "No", 2, 3
+    )))
 
-ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x= reorder(answer, -levels))) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
@@ -1883,6 +1797,9 @@ ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ylim(-100,100)+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Data storing")+
   scale_fill_manual(values =  cb_pie2)
@@ -1912,8 +1829,8 @@ q23.38.specify.summary <-
 ##For Yes = please specify = Security and Privacy, costs, and backups
 
 
-q23.38.specify.summary$Question[q23.38.specify.summary$Question == "X23"] <- "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?"
-q23.38.specify.summary$Question[q23.38.specify.summary$Question == "X38"] <- "Do you have any concerns about storing data on the Alliance Cloud\n(e.g., safety/security, backups)?"
+q23.38.specify.summary$Question[q23.38.specify.summary$Question == "X23"] <- "Question 23"
+q23.38.specify.summary$Question[q23.38.specify.summary$Question == "X38"] <- "Question 38"
 
 #sum
 q23.38.specify.sum <- 
@@ -1928,13 +1845,12 @@ q23.38.specify.merged <-
 
 #Add negative values to create the mirror barplot graph
 q23.38.sum.flip <- q23.38.specify.merged %>% 
-  mutate(new_n = ifelse(Question == "Do you have any concerns about storing data on the commercial cloud\n(e.g., safety/security, backups, costs of downloading or moving data)?",
+  mutate(new_n = ifelse(Question == "Question 23",
                         -1*proportion, proportion))
 
 #### Mirror Plot- Yes - describe concerns####
 
-# cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
-ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer_clean)) + 
+ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x= answer_clean)) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
@@ -1943,10 +1859,12 @@ ggplot(q23.38.sum.flip, aes(fill=Question, y=new_n, x=answer_clean)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ylim(-100,100)+
   xlab("Answer") + ylab("Proportion")+
   ggtitle("Concerns about data storing")+
   scale_fill_manual(values =  cb_pie2)
-
 
 
 ### Q25 - Have you lost access to data stored on the commercial cloud due to lack of continuity of funding for your research? ######
@@ -2004,6 +1922,7 @@ ggplot(q25.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Have you lost access to data stored on the commercial cloud\ndue to lack of continuity of funding for your research?")
 
 ### Q26 - Do you get support when using the commercial cloud? ######
@@ -2064,6 +1983,7 @@ ggplot(q26.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Do you get support when using the commercial cloud?")
 
 #### Yes - specify ####
@@ -2158,8 +2078,7 @@ ggplot(q27.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
-  geom_text(position = position_stack(vjust = .5), 
-            aes(y=Proportion, label=round(Proportion, digits = 0))) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Would you like support from the Alliance when using the commercial cloud?")
 
 ### Q29 - What is/was your primary reason for using the Alliance Cloud?######
@@ -2187,7 +2106,7 @@ q29_clean <-
                           X29 == "Matériel spécialisé (p. ex., TPU, GPU)", "Specialized hardware (e.g., TPUs, GPUs)", ifelse(
                             X29 == "Additional comments:", "Delete", ifelse(
                               X29 == "Autre (veuillez préciser) :", "Delete", "Other"
-                              ))))))))))))))) %>% 
+                            ))))))))))))))) %>% 
   filter(!answer_n == "Delete") # n = 100
 
 
@@ -2202,8 +2121,8 @@ q29.domain <-
 Workflow.q29 <- q29.domain
 
 nHR <- filter(Workflow.q29, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #28
-nSE <- filter(Workflow.q29, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#71
-nSSH <- filter(Workflow.q29, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #19
+nSE <- filter(Workflow.q29, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#70
+nSSH <- filter(Workflow.q29, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #20
 
 
 
@@ -2274,8 +2193,8 @@ q30.domain <-
 Workflow.q30 <- q30.domain
 
 nHR <- filter(Workflow.q30, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #23
-nSE <- filter(Workflow.q30, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#66
-nSSH <- filter(Workflow.q30, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #18
+nSE <- filter(Workflow.q30, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#65
+nSSH <- filter(Workflow.q30, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #19
 
 
 
@@ -2368,6 +2287,7 @@ ggplot(q32.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Are there cloud services which you would like to be able to\naccess on the Alliance Cloud but currently cannot\n(e.g., Managed Kubernetes, Galaxy, Docker)?")
 
 #### Yes - specify ####
@@ -2461,7 +2381,8 @@ ggplot(q39.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) +
         axis.text.x = element_text(size = 12),
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 15))#+
+        legend.title = element_text(size = 15))+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Would it be helpful to have tools that track your cloud data\nstorage and remind you to back up or migrate content?")
 
 ### Q40 -  On top of the existing resources, which of the following technical support methods would you like to access? Check all that apply ######
@@ -2471,18 +2392,6 @@ q40 <- survey_organized_spread %>%
   select(Internal.ID, X40) %>% 
   unnest(X40) %>% 
   rename(answer = X40) # n = 92
-
-#Create a table with domain for TC3 by ID
-domain <- 
-  domain_new_table1 %>% 
-  select(-Domain, -n)
-
-domain1 <- domain
-
-#### domain1$TC3 <-
-####  recode_factor(domain1$TC3, CIHR = "Health Research",
-###            NSERC = "Sciences and Engineering", SSHRC = "Social Sciences and Humanities")
-
 
 #Organize q40 by adding all "other" answers together
 q40_orga <- 
@@ -2494,7 +2403,7 @@ q40_orga <-
                answer == "Online real-time chat with cloud support (i.e., Mattermost, Rocket Chat or Slack)", "Online real-time chat with cloud support", ifelse(
                  answer == "Topical cloud-related training", answer, ifelse(
                    answer == "Virtual office hours", answer, "Other"
-                     )))))) # n = 92
+                 )))))) # n = 92
 
 #summarize the data
 q40_summary <- 
@@ -2516,8 +2425,8 @@ q40.domain <-
 Workflow.q40 <- q40.domain
 
 nHR <- filter(Workflow.q40, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #28
-nSE <- filter(Workflow.q40, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#59
-nSSH <- filter(Workflow.q40, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #22
+nSE <- filter(Workflow.q40, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#58
+nSSH <- filter(Workflow.q40, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #23
 
 
 
@@ -2547,8 +2456,7 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "bottom", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   ggtitle("Exploring Technical Support Options for Additional Resources") +
   xlab("") + 
   ylab("")
-# fixed_plot_aspect()
