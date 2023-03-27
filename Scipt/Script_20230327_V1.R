@@ -748,7 +748,7 @@ q10 <- survey_organized_spread %>%
 #Create a table with domain for TC3 by ID
 domain1 # n = 474
 
-#Organize q10 by adding all "other" answers together ##### 
+#Organize q10 by adding all "other" answers together
 q10_orga <- 
   q10 %>%
   filter(!factor == "Other") %>% 
@@ -981,13 +981,17 @@ q12.28.sum.merged <-
 #Add negative values to create the mirror barplot graph
 q12.28.summary.flip <- q12.28.sum.merged %>% 
   mutate(new_n = ifelse(Question == "Question 12",
-                        -1*proportion, proportion))
+                        -1*proportion, proportion),
+         order = ifelse( #To reorder the answers in the graph
+           answer == "Yes", 1, ifelse(
+             answer == "No", 2, 3
+           )))
 
 #ggplot comparing answers
 cb_pie1 <- rep(c("#32322F", "#D6AB00"), 100)
 cb_pie2 <- rep(c("#D6AB00","#32322F"), 100)
 
-ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=answer)) + 
+ggplot(q12.28.summary.flip, aes(fill=Question, y=new_n, x=reorder(answer, -order))) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
@@ -1050,6 +1054,7 @@ q13_org_domain_summary <-
 ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) + 
   geom_bar(position="stack", stat="identity")+ 
   scale_fill_manual(values =  cbp1)+
+  theme_linedraw(base_size = 12) +
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
         axis.text.x = element_text(size = 8),
@@ -1057,7 +1062,6 @@ ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) +
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15),
         legend.position = "left")+
-  theme_linedraw(base_size = 12) +
   ggtitle("Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds\ndid your research group consume over the last calendar year on commercial\ncloud resources?")+
   xlab("Funds ($)") + ylab("Number of responses")
 
@@ -1107,14 +1111,9 @@ q14_org_domain_summary <-
 ggplot(q14_org_domain_summary, aes(fill=TC3, y=n, x=reorder(credits, sort))) + 
   geom_bar(position="stack", stat="identity")+ 
   scale_fill_manual(values =  cbp1)+
-  theme(plot.title = element_text(size = 12, face = "bold"),
-        axis.title = element_text(size = 12),
-        axis.text.x = element_text(size = 8),
-        axis.text.y = element_text(size = 12),
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 12),
-        legend.position = "left")+
   theme_linedraw(base_size = 12) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  
   ggtitle("Approximately how many dollars (CDN) of research funds did your research\ngroup spend over the last calendar year on commercial\ncloud resources?")+
   xlab("Funds ($)") + ylab("Number of responses")
 
@@ -1177,10 +1176,12 @@ ggplot(q13.14.sum.flip1, aes(fill=Question, y=new_n, x=reorder(answer, -sort))) 
         axis.text.x = element_text(size = 15),
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
-        legend.title = element_text(size = 15))+
+        legend.title = element_text(size = 15),
+        legend.position = "left")+
   xlab("Answer") + ylab("Proportion")+
-  ggtitle("Commercial cloud vs Alliance Community cloud")+
-  scale_fill_manual(values =  cb_pie2)
+  ggtitle("cloud credits or vendor in-kind funds vs research funds")+
+  scale_fill_manual(values =  cb_pie2)+
+  ylim(-100,100)
 
 
 ### Q15 - How is your commercial cloud budget funded? ######
@@ -1656,11 +1657,16 @@ q21.36.sum.merged <-
 #Add negative values to create the mirror barplot graph
 q21.36.sum.flip <- q21.36.sum.merged %>% 
   mutate(new_n = ifelse(Question == "Question 21",
-                        -1*proportion, proportion))
+                        -1*proportion, proportion),
+         order = ifelse(
+           answer == "Yes", 1, ifelse(
+             answer == "No", 2, 3
+           )))
 
 
 #### Plot ####
-ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) + 
+
+ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=reorder(answer, -order))) + 
   geom_bar(position="stack", stat="identity")+
   coord_flip()+
   theme(plot.title = element_text(size = 18, face = "bold"),
@@ -1669,12 +1675,12 @@ ggplot(q21.36.sum.flip, aes(fill=Question, y=new_n, x=answer)) +
         axis.text.y = element_text(size = 12),
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 15))+
+  theme_linedraw(base_size = 18) +
   theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
   xlab("Answer") + ylab("Proportion")+
-  ggtitle("The need to securely share data on clouds")+
+  ggtitle("Data transfer")+
   scale_fill_manual(values =  cb_pie2)+
   ylim(-100,100)
-
 
 
 ### Q22 & Q37 ######
@@ -1915,6 +1921,7 @@ PieDonut(q25_summay,
 
 ggplot(q25.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
+  coord_flip()+
   scale_fill_manual(values =  cb_pie_3)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
@@ -1976,6 +1983,7 @@ PieDonut(q26_summay,
 
 ggplot(q26.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
+  coord_flip()+
   scale_fill_manual(values =  cb_pie1)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
@@ -2070,7 +2078,8 @@ PieDonut(q27_summay,
 #### plot - domain #### 
 
 ggplot(q27.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
-  geom_bar(position="stack", stat="identity")+ 
+  geom_bar(position="stack", stat="identity")+
+  coord_flip()+
   scale_fill_manual(values =  cb_pie_3)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
@@ -2280,6 +2289,7 @@ PieDonut(q32_summay,
 
 ggplot(q32.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
+  coord_flip()+
   scale_fill_manual(values =  cb_pie1)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
@@ -2375,6 +2385,7 @@ PieDonut(q39_summay,
 
 ggplot(q39.domain.summary, aes(fill=Answer, y=Proportion, x=TC3)) + 
   geom_bar(position="stack", stat="identity")+ 
+  coord_flip()+
   scale_fill_manual(values =  cb_pie_3)+
   theme(plot.title = element_text(size = 18, face = "bold"),
         axis.title = element_text(size = 15),
