@@ -1,5 +1,2 @@
-# To add: a description of the project
-# To add: how to reproduce this work
-Add the description of the data
-
-Add the description of the script and how it can used
+#To reproduce this project:
+Run the script (File "Script" in folder "Script" = make sure to re-specify the project directory.

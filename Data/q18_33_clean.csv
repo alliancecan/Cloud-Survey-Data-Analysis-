@@ -1,0 +1,93 @@
+Column,Internal.ID,Question,answer,answer_clean
+1,24984393,X18,our cloudsecheduler VM provisioning service - see previous link to journal paper,VM provisioning service
+2,25035982,X18,Secure storage,Secure storage
+3,25047795,X18,Jupyter,JupyterHub
+4,25049901,X18,Jupyter + infrastructure to run jobs generated from it.,JupyterHub
+5,25049972,X18,Docker containers,Docker
+6,25050647,X18,see above,NA
+7,25066420,X18,Nextcloud,Nextcloud
+8,25073093,X18,cocalc,cocalc
+9,25080210,X18,kubernetes with science platform (CANFAR-like),Managed Kubernetes
+10,25088147,X18,NOT OneDrive,NA
+11,25088984,X18,"Dropbox is 500000000000 times less glitchy, more reliable, and easier to use than one-drive. For that matter, Google Drive is also easier, less problematic when trying to share, and just more attractive than One-Drive",Google Drive
+11,25088984,X18,"Dropbox is 500000000000 times less glitchy, more reliable, and easier to use than one-drive. For that matter, Google Drive is also easier, less problematic when trying to share, and just more attractive than One-Drive",Dropbox
+12,25114456,X18,"Yes, a public sector solution that is managed by Canadians on Canadian soil that is able to protect our sensitive research data.",Other
+13,25182274,X18,Jupyter notebooks that actually work (i.e. Google Colab),JupyterHub
+14,25186640,X18,All,All
+15,25206627,X18,"Jupyter Lab, Scalable GPU workloads, object store.",JupyterHub
+15,25206627,X18,"Jupyter Lab, Scalable GPU workloads, object store.",Scalable GPU workloads
+16,25214105,X18,GPT-3,GPT-3
+17,25272086,X18,"Jupyter Hub, Dask Hub, ARCO data systems, scaffolding for documentation, data set discovery tools",JupyterHub
+17,25272086,X18,"Jupyter Hub, Dask Hub, ARCO data systems, scaffolding for documentation, data set discovery tools",Dask Hub
+17,25272086,X18,"Jupyter Hub, Dask Hub, ARCO data systems, scaffolding for documentation, data set discovery tools",ARCO data systems
+18,25290657,X18,More GPU nodes,GPU nodes
+19,25295225,X18,Access to data archives (i.e. Sequence Read Archive),Access to data archives (i.e. Sequence Read Archive)
+20,25317056,X18,heroku,heroku
+21,25339640,X18,FPGAs and occasional bare-metal access to hardware for performance counters,FPGAs
+22,25355509,X18,https://orcestra.ca/,orcestra
+23,25367384,X18,For knowledge mobilization,knowledge mobilization
+24,25382335,X18,Gitlab,Gitlab
+25,25048291,X18,Volet ML et IA; Acquisition des données,Volet ML and IA
+26,25181610,X18,L'équivalent de Dropbox sécurisé pour mettre des données confidentielles de santé. Avec un frontend simple comme Dropbox qui sync à l'ordinateur.,Dropbox
+27,25236835,X18,quelque chose comme gitlab,Gitlab
+28,25257885,X18,données de génomique issus de fonds recherche publiques,Genomics data
+29,25065311,X18,dropbox,Dropbox
+30,25085275,X18,NVivo,NVivo
+31,25114242,X18,Hosting Docker Containers,Docker
+32,25129461,X18,HUBzero,HUBxero
+33,25229330,X18,genomics pipelines in GCP,genomics pipelines in GCP
+34,25232183,X18,NVIDIA GPU Nodes (with H100s/A100s connected with NVLink),NVIDIA GPU Nodes (H100s/A100s)
+35,25037413,X18,Binderhub,Binderhub
+36,25146089,X18,Cloud Storage,Cloud Storage
+37,25049017,X18,AWS,AWS
+38,25183213,X18,"Il faudrait offrir une solution cartographique web interactive et collaborative pour afficher des données géospatiales (la tendance est d'utilisé COG et STAC) et pouvoir ajouter des couches d'information (new layers, new geometries like point, line, polygone)",COG and STAC
+39,25107355,X18,OMERO,OMERO
+40,25253792,X18,My response would be what I selected in question 17. A National cloud service at a minimum shaoud offer the same level of services and security as commercial cloud offerings.,Other
+41,25298749,X18,Most recent NextCloud,Nextcloud
+42,25005787,X33,"Mattermost, Overleaf (self-hosted), Nextcloud, gitlab",Mattermost
+42,25005787,X33,"Mattermost, Overleaf (self-hosted), Nextcloud, gitlab",Overleaf
+42,25005787,X33,"Mattermost, Overleaf (self-hosted), Nextcloud, gitlab",Nextcloud
+42,25005787,X33,"Mattermost, Overleaf (self-hosted), Nextcloud, gitlab",Gitlab
+43,25061022,X33,Generally CANFAR could be a national service.,CANFAR
+44,25073093,X33,cocalc,colac
+45,25079065,X33,our thin client/thick client inventory management software,thin client/thick client inventory management software
+46,25080210,X33,"All the CANFAR Science platform services:  notebooks, remote desktop, visualisation on-demand, elastic container batch processing",CANFAR
+47,25113608,X33,historical documents,historical documents
+48,25115628,X33,document processing pipelines,document processing pipelines
+49,25133606,X33,Data catalog,Data catalog
+50,25187254,X33,"We would like to share large raw datasets for occasional use by researchers in the future.  This might be less than one download a year, but our data acquisition was funded by NSERC and cost $11 million dollars and should not be lost.",Other
+51,25214105,X33,GPT-3,GPT-3
+52,25224594,X33,Unity,Unity
+53,25224814,X33,Unity game engine,Unity game engine
+54,25277171,X33,cwrc.ca; lincsproject.ca,cwrc
+54,25277171,X33,cwrc.ca; lincsproject.ca,lincsproject
+55,25290657,X33,Docker,Docker
+56,25339640,X33,SPEC CPU 2017 benchmark license,SPEC CPU 2017 benchmark license
+57,25366279,X33,Secure remote desktop applications and GPU banks for research involving machine learning and artificial intelligence,Secure remote desktop applications and GPU banks
+58,25006081,X33,"Mattermost, Nextcloud, GitLab, Overleaf",Mattermost
+58,25006081,X33,"Mattermost, Nextcloud, GitLab, Overleaf",Nextcloud
+58,25006081,X33,"Mattermost, Nextcloud, GitLab, Overleaf",Gitlab
+58,25006081,X33,"Mattermost, Nextcloud, GitLab, Overleaf",Overleaf
+59,25222780,X33,Avoir la possibilité de soumettre beaucoup (des dizaines de milliers) de petites tâches indépendantes dans la file d'attente. Ça éviterait de devoir programmer nous-même la parallélisation.,Other
+60,25222828,X33,"Humann3, squeezemeta, picrust2",Humann3
+60,25222828,X33,"Humann3, squeezemeta, picrust2",squeezemeta
+60,25222828,X33,"Humann3, squeezemeta, picrust2",picrust2
+61,25223823,X33,osrm. Je pense que beaucoup de chercheur l'utiliserait au lieu d'utiliser illégalement Google Maps,osrm
+62,25236835,X33,Gestion de code du type GitHub/Gitlab,Gitlab
+63,25311578,X33,Galaxy,Galaxy
+64,25036445,X33,"OLTP databases, data warehouse software.",OLPT
+65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Managed Kubernetes
+65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Kubeflow
+65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",Pachyderm
+65,25037963,X33,"Probably Kubernetes, Kubeflow, Pachyderm, JupyterHub, etc",JupyterHub
+66,25297783,X33,"Jupyterhub, Vault",JupyterHub
+67,25090587,X33,I think all the extra services that CANFAR provides to astronomers is a great model for what would be useful in other research communities,CANFAR
+68,25232183,X33,NVIDIA GPU Nodes (H100s/A100s),NVIDIA GPU Nodes (H100s/A100s)
+69,25281424,X33,OMERO (we've already begun the process of nationalizing it and have gathered a lot of support so far),OMERO
+70,25291966,X33,Gromacs (already on the Alliance),Gromacs
+71,25297915,X33,Islandora or more specifically the CWRC / LEAF (Linked Editing Academic Framework),Islandora
+72,25298132,X33,Perhaps a national geospatial (meta)data catalogue e.g. CKAN service.,CKAN
+73,25183213,X33,Galaxy; interface web cartographique intéractive et collaborative,Galaxy
+74,24966521,X33,test,NA
+75,25298749,X33,"Most recent NextCloud, recent Mind Map software",Nextcloud
+75,25298749,X33,"Most recent NextCloud, recent Mind Map software",Mind Map

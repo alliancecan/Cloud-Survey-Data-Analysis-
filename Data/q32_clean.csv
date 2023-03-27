@@ -1,0 +1,60 @@
+,Internal.ID,X32,answer_clean
+1,24970299,RONIN,RONIN
+2,25005787,"Docker, easy VM creation, pre-installed VMs",Docker
+3,25035982,Secure storage and data sharing,Security
+4,25061022,"Managed Kubernetes, Docker",Managed Kubernetes
+4,25061022,"Managed Kubernetes, Docker",Docker
+5,25073434,Docker and Kubernetes would be nice!,Docker
+5,25073434,Docker and Kubernetes would be nice!,Managed Kubernetes
+6,25080210,"Managed Kubernetes, Container Registry",Managed Kubernetes
+6,25080210,"Managed Kubernetes, Container Registry",Container Registry
+7,25214105,GPT-3,GPT-3
+8,25214491,Managed Kubernetes and Docker,Docker
+8,25214491,Managed Kubernetes and Docker,Managed Kubernetes
+9,25224594,Docker,Docker
+10,25262693,"Docker, Agile Management",Docker
+10,25262693,"Docker, Agile Management",Agile Management
+11,25277171,Managed Kubernetes; Docker,Docker
+11,25277171,Managed Kubernetes; Docker,Managed Kubernetes
+12,25290657,Docker,Docker
+13,25291133,"Galaxy, Docker",Docker
+13,25291133,"Galaxy, Docker",Galaxy
+14,25297364,Docker,Docker
+15,25317056,"docker, heroku, ... more PaaS",Docker
+15,25317056,"docker, heroku, ... more PaaS",Heroku
+16,25339640,FPGAs,FPGAs
+17,25366279,"I'm not fully versed in the Alliance Cloud, but I know that computing needs such as data access and central GPU access for Machine Learning will become more important in my area of research.",GPU
+18,25006081,Docker par exemple,Docker
+19,25171092,Docker,Docker
+20,25181610,HIPAA-compliant secure servers to use for analysis of large (health) datasets,HIPAA
+21,25201141,"Kubernetes, Docker",Managed Kubernetes
+21,25201141,"Kubernetes, Docker",Docker
+22,25222828,"Humann3, squeezemeta, picrust2",Humann3
+22,25222828,"Humann3, squeezemeta, picrust2",squeezemeta
+22,25222828,"Humann3, squeezemeta, picrust2",picrust2
+23,25223823,Kubernetes et Docker,Managed Kubernetes
+23,25223823,Kubernetes et Docker,Docker
+24,25225590,Docker!,Docker
+25,25311578,Galaxy,Galaxy
+26,25036445,"Kubernetes, Cloud resources appropriate for OLTP databases or data warehouses (*not* managed database services).",Managed Kubernetes
+27,25037963,kubernetes,Managed Kubernetes
+28,25042362,"Managed Kubernetes, Apptainer/Docker",Managed Kubernetes
+28,25042362,"Managed Kubernetes, Apptainer/Docker",Docker
+29,25297783,Managed Kubernetes,Managed Kubernetes
+30,25059216,"Containers, GPU",GPU
+30,25059216,"Containers, GPU",Docker
+31,25167544,Don't know,NA
+32,25281424,all of the above,Managed Kubernetes
+32,25281424,all of the above,Docker
+32,25281424,all of the above,Galaxy
+33,25297915,Managed Kubernetes or Docker,Managed Kubernetes
+33,25297915,Managed Kubernetes or Docker,Docker
+34,25298132,Web services monitoring of our platforms. We use Docker heavily - additional support there would be great too.,Web services
+34,25298132,Web services monitoring of our platforms. We use Docker heavily - additional support there would be great too.,Docker
+35,25352874,kubernetes,Managed Kubernetes
+36,25029523,Nous pourrions éventuellement avoir besoin de Galaxy,Galaxy
+37,25183213,"Clusters HPC pour déclencher des entrainements et inférence depuis un portail web. Galaxy, managed Kubernetes Docker bonnes idées",Clusters HPC
+38,24966521,Galaxy,Galaxy
+39,25298749,"Docker, Galaxy",Docker
+39,25298749,"Docker, Galaxy",Galaxy
+40,25063607,Managed Kubernetes,Managed Kubernetes

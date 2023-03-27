@@ -1,0 +1,127 @@
+,Internal.ID,Question,answer,answer_clean
+1,24984524,X23,"Security, privacy of health data, vendor lock-in",Security and privacy
+2,25005787,X23,"safety/security, costs",Security and privacy
+3,25035982,X23,Out of country,Other
+4,25048045,X23,"Occasionally but have never had any problems over many years and cloud is definitely more secure than old-school saving onto external drives, printing materials and keeping files on various computers ...",Other
+5,25049733,X23,Security,Security and privacy
+6,25059743,X23,I'm not sure what is secure,NA
+7,25061632,X23,compliance with FIPA and PIPA,compliance with FIPA and PIPA
+8,25065401,X23,All of the above,All answers
+9,25066420,X23,privacy,Security and privacy
+10,25073434,X23,Costs.  Inflexibility.  Use of a commercial provider with profit incentives.  Lack of accountability.,Costs
+11,25075110,X23,"back up, security, accessibility during travel, loss of work",Security and privacy
+12,25075845,X23,not compliant with policies,not compliant with policies
+13,25076669,X23,"We never considered it for storage, because of the cost.",Costs
+14,25077020,X23,safety,Security and privacy
+15,25078691,X23,security,Security and privacy
+16,25078805,X23,cost of hosting; loss of access,Costs
+17,25079065,X23,Always worry about privacy and security.,Security and privacy
+18,25080398,X23,"cost, vendor dependency",Costs
+19,25087157,X23,Costs,Costs
+20,25088990,X23,Security of the cloud service,Security and privacy
+21,25099125,X23,Backups,Backups
+22,25100890,X23,Concerned about third party access,Security and privacy
+23,25102501,X23,Ensuring that the data is secured and only accessible to research team,Security and privacy
+24,25113850,X23,"I'm afraid to lose it, afraid my employer will have control over the data (if I change jobs, if we go on strike)",Backups
+25,25114034,X23,"I tend to keep files on the cloud but also periodically back up onto a harddrive -- I'm always worried about stability, both ways.",Backups
+26,25114456,X23,Research data should not be managed by a US corporation. The Patriot Act and other legislation should make this a non-starter. I find these questions biased and unprofessional.,Other
+27,25115628,X23,"privacy, surveillance",Security and privacy
+28,25116782,X23,security,Security and privacy
+29,25126570,X23,"Security, costs",Security and privacy
+30,25163364,X23,Obsolescence: are these backups actually safe in the long run?,NA
+31,25182274,X23,Long-term costs,Costs
+32,25185827,X23,privacy,Security and privacy
+33,25193223,X23,Would not store sensitive data,Security and privacy
+34,25224155,X23,health data regulation,health data regulation
+35,25262693,X23,"Patriot Act, US",Security and privacy
+36,25290657,X23,"cost, privacy",Security and privacy
+37,25317056,X23,PII of course,PII
+38,25355509,X23,cost and security,Costs
+39,25367384,X23,Security,Security and privacy
+40,25382335,X23,Must be hosted in Canada for compliance.,Other
+41,25382517,X23,"Security, downloading/moving data",Security and privacy
+42,25399285,X23,Costs,Costs
+43,25403062,X23,patient consent and confidentiality,Security and privacy
+44,25006081,X23,"sûreté/sécurité, coûts",Security and privacy
+45,25080216,X23,sécurité et confidentialité,Security and privacy
+46,25099281,X23,1. Non sécuritaire 2. Interdit par l’entente contractuel,Security and privacy
+47,25127351,X23,Utilisation autre des données. Confidentialité. Autonomie,Security and privacy
+48,25176731,X23,sécurité,Security and privacy
+49,25178004,X23,Sûreté,Security and privacy
+50,25181610,X23,J'ai des besoins de partager/transférer des données privées mais je n'utilise pas actuellement un logiciel commercial pour le faire en raison de préoccupations de sécurité,Security and privacy
+51,25199071,X23,coûts,Costs
+52,25201141,X23,Sécurité,Security and privacy
+53,25213520,X23,"sécurité, confidentialité",Security and privacy
+54,25223438,X23,sûreté/sécurité / couts,Security and privacy
+55,25251108,X23,sécurité des données,Security and privacy
+56,25251338,X23,Analyse constante des données poura assurer l'anonymisation et,Other
+57,25257885,X23,Obligations légales; sécurité,Security and privacy
+58,25266658,X23,"encryptage, disponibilité",Security and privacy
+59,25266892,X23,protection des données,Security and privacy
+60,25310766,X23,"par l'usage que font les compagnies de nos données + lieu physique d'hébergement dans un pays avec des lois permissives (i.e., USA)",Security and privacy
+61,25347276,X23,"sûreté, coût",Security and privacy
+61,25347276,X23,"sûreté, coût",Costs
+62,25387802,X23,"sécurité, principalement.",Security and privacy
+63,25037963,X23,"cost, ingress/egress fees. Should not be used for any sensitive data",Costs
+64,25042362,X23,"Costs, sustainability, lack of specialized support",Costs
+65,25043619,X23,security,Security and privacy
+66,25110280,X23,all of the above,all of the above
+67,25169416,X23,Moving data can be time-consuming and confusing for some research team members to do using Sync,Time
+68,25206196,X23,Who can access the data (especially clouds hosted in foreign countries or operated by large foreign companies),Security and privacy
+69,25354659,X23,all of the above,all of the above
+70,25244279,X23,bris de confidentialité,Security and privacy
+72,25283902,X23,"Sécurité, coûts",Costs
+71,25257788,X23,"sécurité, coût",Security and privacy
+71,25257788,X23,"sécurité, coût",Costs
+72,25283902,X23,"Sécurité, coûts",Security and privacy
+73,25035154,X23,backups and ease of access by collaborators,Backups
+74,25065311,X23,security and privacy,Security and privacy
+75,25085275,X23,"safety/security is probably my biggest concern, but also loss of data",Security and privacy
+76,25092462,X23,It's really hard to tell which cloud services are secure enough to meet our institutional research ethics standards.,Other
+77,25105753,X23,Security,Security and privacy
+78,25167544,X23,Vendor cannot access data.,Security and privacy
+79,25214191,X23,Unsure if the security specs meet all of my institutions security requirements,Security and privacy
+80,25229330,X23,egress costs,Costs
+81,25367589,X23,all you've mentioned above -- specifically backups. Also IP concerns around policies for commercial cloud offerings.,all of the above
+82,25232183,X23,"Medical data of patients is very sensitive to be on the commercial cloud. Also, it is tedious and sometimes impractical to move large (in 100s of GBs) datasets to commercial clouds.",Security and privacy
+83,25275366,X23,Storage space,Storage space
+84,25086851,X23,"Security, Privacy",Security and privacy
+85,25113679,X23,"Data breaches (safety/security), backups",Security and privacy
+86,25146089,X23,Security; Using American Servers rather than Canadian,Security and privacy
+87,25398463,X23,safety/security,Security and privacy
+88,25086970,X23,storage and bandwidth charges,Storage space
+89,25189499,X23,security,Security and privacy
+90,24966521,X23,American servers,Security and privacy
+91,25059171,X23,"All of these are concerns, and I feel they are addressed by my current cloud storage services of choice.",all of the above
+92,25080064,X23,I don't but I know researchers at my institution do (need secure places to store data they are working on),Security and privacy
+93,25107355,X23,"safety, backups and size available/cost efficient",Backups
+93,25107355,X23,"safety, backups and size available/cost efficient",Security and privacy
+94,25127861,X23,Loss of such data is not covered by my institution's insurance policy.,Backups
+95,25152545,X23,cost to use,Costs
+96,25270225,X23,"security, backups",Backups
+96,25270225,X23,"security, backups",Security and privacy
+97,25298749,X23,costs of hosting,Costs
+98,24967276,X23,abc,NA
+99,24984524,X38,Lack of backup.,Backups
+100,25035982,X38,Security,Security and privacy
+101,25043611,X38,Regular backups,Backups
+102,25079065,X38,Privacy and security foremost,Security and privacy
+103,25187254,X38,I want data to be available for decades after the project finishes and people retire!,Long term maitenance
+104,25277171,X38,Somewhat worried by some of the problems we've experienced with volumes going down.,Other
+105,25290657,X38,Unclear access,Other
+106,25181610,X38,I don't currently use it in this way. But I would like to.,NA
+107,25201141,X38,Sécurité,Security and privacy
+108,25222828,X38,"pas assez d'allocation de base, surtout avec les mégadonnées qui s'accumulent",Storage space
+109,25232175,X38,La catastrophe à l'ETS en mars 2022 nous a fait réalisé que le commercial procure plus de sécurité et plus de support.,Security and privacy
+110,25036445,X38,Not yet possible to backup Object store to tape,Backups
+111,25042362,X38,"Reliability, cybersecurity",Security and privacy
+112,25110280,X38,all of the above,all of the above
+113,25166426,X38,"accès à long terme aux données, car contrôlé par prof et non étudiant/postdoc/professionnel de recherche",Long term maitenance
+114,25257788,X38,stockage de données sensibles,Storage space
+115,25038877,X38,"Have to manage own backups, risky if left to researchers!!!",Backups
+116,25139773,X38,Taking backup outside a few times a week. I am not trusting anyone,Backups
+117,25232183,X38,Sensitive data of patients,Security and privacy
+118,25281424,X38,"persistence of data due to the need to continually request for renewal of space, also security of sensitive data",Storage space
+119,25297915,X38,backups,Backups
+120,25298132,X38,"Mainly data loss, though have had no issues with Alliance Cloud so far, and we do off-site backups too.",Backups
+121,25029523,X38,Aucune sauvegarde,Backups
