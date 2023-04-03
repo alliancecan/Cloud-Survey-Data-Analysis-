@@ -1,7 +1,7 @@
 # Prepare the directory and load the libraries ----------------------------
 
 ###Set working directory
-setwd("C:/Users/fsdha/Desktop/Cloud-Survey-Data-Analysis-Fares/Data")
+setwd("C:/Users/fsdha/Downloads/Cloud-Survey-Data-Analysis--main/Cloud-Survey-Data-Analysis--main/Data")
 
 ###load libraries
 library(tidyverse)
@@ -185,7 +185,7 @@ ggplot(Ontario, aes(x = Role_n)) +
   ylab("Number of respondents")
 
 #### Quebec ######
-Quebec <-filter(survey_x1.x2_v2, Geography %in% "Québec") %>% 
+Quebec <-filter(survey_x1.x2_v2, Geography %in% "QuÃ©bec") %>% 
   select( Geography, Role_n) %>%
   group_by(Role_n)  %>% 
   summarize(n = n()) %>% 
@@ -205,7 +205,7 @@ ggplot(Quebec, aes(x = Role_n)) +
   coord_flip() + 
   theme_linedraw() +
   theme(legend.position = "none") +
-  ggtitle("Québec") +
+  ggtitle("QuÃ©bec") +
   xlab("Role_n") + 
   ylab("Number of respondents")
 
@@ -423,7 +423,7 @@ q5_ord_cs <-
                                               ifelse(b =="Google Cloud Platform", "Google Cloud Platform (GCP)",
                                                      ifelse(b =="Microsoft Azure", "Microsoft Azure",
                                                             ifelse(b=="Oracle Cloud","Oracle Cloud",
-                                                                   ifelse(b=="Regional cloud offering", "Regional cloud offering (e.g., Calcul Québec Juno Cloud)",
+                                                                   ifelse(b=="Regional cloud offering", "Regional cloud offering (e.g., Calcul QuÃ©bec Juno Cloud)",
                                                                           ifelse(b=="Provincial cloud offering", "Provincial cloud offering (e.g.., BCNET EduCloud)",
                                                                                  ifelse(b=="Institutional cloud offering", "Institutional cloud offering", NA))))))))))
 #Select most important variables
@@ -2112,9 +2112,9 @@ q29_clean <-
                     X29 == "Ease of use", X29, ifelse(
                       X29 == "Requiring cloud software not available on the commercial clouds ", "Requiring cloud software not available on the commercial clouds", ifelse(
                         X29 == "Replicating research study/analysis previously performed on the Alliance cloud", X29, ifelse(
-                          X29 == "Matériel spécialisé (p. ex., TPU, GPU)", "Specialized hardware (e.g., TPUs, GPUs)", ifelse(
+                          X29 == "MatÃ©riel spÃ©cialisÃ© (p. ex., TPU, GPU)", "Specialized hardware (e.g., TPUs, GPUs)", ifelse(
                             X29 == "Additional comments:", "Delete", ifelse(
-                              X29 == "Autre (veuillez préciser) :", "Delete", "Other"
+                              X29 == "Autre (veuillez prÃ©ciser) :", "Delete", "Other"
                             ))))))))))))))) %>% 
   filter(!answer_n == "Delete") # n = 100
 
@@ -2471,3 +2471,199 @@ ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) +
   ggtitle("Exploring Technical Support Options for Additional Resources") +
   xlab("") + 
   ylab("")
+
+
+### Q41 -  On top of the existing resources, which of the following technical support methods would you like to access? Check all that apply ######
+#### data cleaning & preparation ####
+#extract question 40
+q41 <- survey_organized_spread %>% 
+  select(Internal.ID, X41) %>% 
+  unnest(X41) %>% 
+  rename(answer = X41) # n = 295
+
+#Organize q40 by adding all "other" answers together
+q41_orga <- 
+  q41 %>% 
+  filter(!answer == "Other") %>% #Other is an invalid answer, keeping it will add extra false answers as they are previsouly "Other (Please specify)"
+  mutate(answer_n = ifelse(answer =="Additional comments:" , "delete",
+           ifelse(answer == "Alliance Cloud platforms (e.g., Jupyter, Galaxy)", answer, ifelse(
+             answer == "Automating infrastructure creation with tools like Terraform, Ansible, APIs, CI/CD", answer, ifelse(
+               answer == "Cloud-based research data management", answer, ifelse(
+                 answer == "Commercial cloud platforms (e.g., Sagemaker, RONIN)", answer, ifelse(
+                   answer == "Commercial cloud usage", answer, ifelse(
+                     answer == "Containers", answer, ifelse(
+                       answer == "Not interested in training", answer, ifelse(
+                         answer == "Using object storage", answer, ifelse(
+                           answer == "Virtual machine backups", answer, "Other"
+                           ))))))))))) %>% 
+  filter(!answer_n == "delete")
+
+#summarize the data
+q41_summary <- 
+  q41_orga %>% 
+  group_by(answer_n) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+
+#link TC3 to q41 IDs
+q41.domain <- 
+  q41_orga %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  select(-answer) %>% 
+  print() ## n = 295
+
+
+Workflow.q41 <- q41.domain
+
+nHR <- filter(Workflow.q41, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #95
+nSE <- filter(Workflow.q41, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#160
+nSSH <- filter(Workflow.q41, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #91
+
+
+
+Workflow_Health <- filter(Workflow.q41, TC3=="Health Research") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng <- filter(Workflow.q41, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH <- filter(Workflow.q41, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer_n) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+
+#### Plot ####
+ggplot(Workflow_Tri1, aes(x=reorder(answer_n,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("Exploring Technical Support Options for Additional Resources") +
+  xlab("") + 
+  ylab("")
+
+### Q42 ######
+q42 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X42) %>% 
+  unnest(X42)%>% 
+  rename(answer = X42)# n = 303
+
+
+
+#### Yes-No- Not sure ####
+q42_orga <- 
+  q42 %>% 
+  mutate(answer_n = ifelse(
+    answer == "Yes ", "Yes", ifelse(
+      answer == "No ", "No", ifelse(
+        answer == "Not sure ", "Not sure", "Other_Yes"
+      )))) %>% 
+  filter(!answer_n == "Other_Yes")
+  
+
+
+
+#summarise data
+q42.summary <- 
+  q42_orga %>% group_by(answer) %>% count() %>% 
+  drop_na()
+
+#### Plot ####
+
+PieDonut(q42.summary, 
+         aes(answer, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=F, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title = "Should the Alliance allocate part of its\nbudget to provide commercial cloud\ncredits as an alternative to a Rapid Access\nService, Resource Allocation Competitions or\nResearch Platforms and Portals award?",
+        titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+
+### Q44 ######
+q44 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X44) %>% 
+  unnest(X44)%>% 
+  rename(answer = X44)# n = 307
+
+
+#summarise data
+q44.summary <- 
+  q44 %>% group_by(answer) %>% count() %>% 
+  drop_na()
+
+#### Plot ####
+
+PieDonut(q44.summary, 
+         aes(answer, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=F, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title = "Should the Alliance allocate part of its\nbudget to provide commercial cloud\ncredits as an alternative to a Rapid Access\nService, Resource Allocation Competitions or\nResearch Platforms and Portals award?",
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+
+### Q45 ######
+q45 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X45) %>% 
+  unnest(X45)%>% 
+  rename(answer = X45)# n = 307
+
+
+#summarise data
+q45.summary <- 
+  q45 %>% group_by(answer) %>% count() %>% 
+  drop_na()
+
+#### Plot ####
+
+PieDonut(q45.summary, 
+         aes(answer, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=F, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title = "Should the Alliance allocate part of its\nbudget to provide commercial cloud\ncredits as an alternative to a Rapid Access\nService, Resource Allocation Competitions or\nResearch Platforms and Portals award?",
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+
+### Q46 ######
+q46 <- 
+  survey_organized_spread %>% 
+  select(Internal.ID, X46) %>% 
+  unnest(X46)%>% 
+  rename(answer = X46)# n = 307
+
+
+#summarise data
+q46.summary <- 
+  q46 %>% group_by(answer) %>% count() %>% 
+  drop_na()
+
+#### Plot ####
+
+PieDonut(q46.summary, 
+         aes(answer, count= n), 
+         ratioByGroup = FALSE, 
+         showPieName=F, 
+         r0=0.0,r1=1,r2=1.4,start=pi/2,
+         labelpositionThreshold=1, 
+         showRatioThreshold = F, 
+         title = "Should the Alliance allocate part of its\nbudget to provide commercial cloud\ncredits as an alternative to a Rapid Access\nService, Resource Allocation Competitions or\nResearch Platforms and Portals award?",
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
