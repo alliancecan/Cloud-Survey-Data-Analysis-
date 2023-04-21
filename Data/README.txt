@@ -1,4 +1,4 @@
-#Data description:
+# Data description:
 
 "MERGED_Cloud_Survey_EN-FR_20220228.csv" is the main data file that contains the merged survey results in both English and French.
 "q6_clean.csv" is the cleaned version of question 6's answers, extracted from the main data file "MERGED_Cloud_Survey_EN-FR_20220228.csv".
