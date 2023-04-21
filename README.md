@@ -9,7 +9,7 @@ This repository is intended for the analysis of survey results that were collect
 A summary of the findings will be shared with the community in Spring 2023.
 
 # Reproduce this work:
-**To reproduce this** run the script in folder "Script", and make sure to re-specify the project's directory.
+**To reproduce this** run the script "Script_20230327_V1.R" in folder "Script", and make sure to re-specify the project's directory.
 
 # Data sensitivity:
 This repository does not contain any sensitive data.
