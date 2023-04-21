@@ -12,4 +12,4 @@ A summary of the findings will be shared with the community in Spring 2023.
 **To reproduce this** run the script in folder "Script", and make sure to re-specify the project's directory.
 
 # Data sensitivity:
-This repository does not contain any sensitive data. Data sensitivity is an important aspect to consider when dealing with any type of data, particularly when it comes to personal or confidential information. 
+This repository does not contain any sensitive data.
