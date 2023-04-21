@@ -1066,7 +1066,7 @@ ggplot(q13_org_domain_summary, aes(fill=TC3, y= n, x=reorder(credits, sort))) +
   xlab("Funds ($)") + ylab("Number of responses")
 
 
-### Q14 - Approximately how many dollars (CDN) in cloud credits or vendor in-kind funds did your research group consume over the last calendar year on commercial cloud resources? ######
+### Q14 - Approximately how many dollars (CDN) of research funds did your  research group spend over the last calendar year on commercial cloud  resources? ######
 q14 <- 
   survey_organized_spread %>% # n = 507
   select(Internal.ID, X14) %>% 
