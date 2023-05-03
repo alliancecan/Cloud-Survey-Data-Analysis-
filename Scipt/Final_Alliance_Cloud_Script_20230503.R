@@ -24,7 +24,7 @@ library(ggthemes)
 ###Load the data
 
 #survey data, english and french versions merged together
-survey <- read.csv("MERGED_Cloud_Survey_EN-FR_20220228.csv",
+survey <- read.csv("FINAL_Alliance_Cloud_Survey_EN_FR_20220228.csv",
                    header = T,
                    encoding = "UTF-8",
                    na.strings=c("","NA")) %>% 
@@ -528,7 +528,7 @@ q6 <-
   select(Internal.ID, X6) %>% 
   unnest(X6)
 
-q6.specify <- read.csv("q6_clean.csv") %>% 
+q6.specify <- read.csv("FINAL_Alliance_Cloud_Survey_Question6_20230503.csv") %>% 
   drop_na()
 
 #summarise
@@ -1469,7 +1469,7 @@ q18.33.specify <-
   q18.33 %>% 
   filter(!answer == "Yes" & !answer == "No")
 
-q18.33.specify <- read.csv("q18_33_clean.csv")
+q18.33.specify <- read.csv("FINAL_Alliance_Cloud_Survey_Questions18_33_20230503.csv")
 
 #list of "if yes please specify" for both questions
 list <- q18.33.specify %>% group_by(Question,answer_clean) %>% count() %>% drop_na()
@@ -1816,7 +1816,7 @@ q23.38.specify <-
   q23.38 %>% 
   filter(!answer == "Yes" & !answer == "No"  & !answer == "Not sure")
 
-q23.38.specify <- read.csv("q23.38_clean.csv")
+q23.38.specify <- read.csv("FINAL_Alliance_Cloud_Survey_Questions23_38_20230503.csv")
 
 #list of "if yes please specify" for both questions
 q23.38.specify <- 
@@ -1999,7 +1999,7 @@ q26.specify <-
   q26 %>% 
   filter(!X26 == "Yes" & !X26 == "No")
 
-q26.specify <- read.csv("q26_clean.csv")
+q26.specify <- read.csv("FINAL_Alliance_Cloud_Survey_Questions26_20230503.csv")
 
 #to be used to reorder the plot values
 order <- as.data.frame(c(7:1))
@@ -2305,7 +2305,7 @@ q32.specify <-
   q32 %>% 
   filter(!X32 == "Yes" & !X32 == "No")
 
-q32.specify <- read.csv("q32_clean.csv")
+q32.specify <- read.csv("FINAL_Alliance_Cloud_Survey_Questions32_20230503.csv")
 
 
 q32.specify.summary <- 
@@ -2486,16 +2486,16 @@ q41_orga <-
   q41 %>% 
   filter(!answer == "Other") %>% #Other is an invalid answer, keeping it will add extra false answers as they are previsouly "Other (Please specify)"
   mutate(answer_n = ifelse(answer =="Additional comments:" , "delete",
-           ifelse(answer == "Alliance Cloud platforms (e.g., Jupyter, Galaxy)", answer, ifelse(
-             answer == "Automating infrastructure creation with tools like Terraform, Ansible, APIs, CI/CD", answer, ifelse(
-               answer == "Cloud-based research data management", answer, ifelse(
-                 answer == "Commercial cloud platforms (e.g., Sagemaker, RONIN)", answer, ifelse(
-                   answer == "Commercial cloud usage", answer, ifelse(
-                     answer == "Containers", answer, ifelse(
-                       answer == "Not interested in training", answer, ifelse(
-                         answer == "Using object storage", answer, ifelse(
-                           answer == "Virtual machine backups", answer, "Other"
-                           ))))))))))) %>% 
+                           ifelse(answer == "Alliance Cloud platforms (e.g., Jupyter, Galaxy)", answer, ifelse(
+                             answer == "Automating infrastructure creation with tools like Terraform, Ansible, APIs, CI/CD", answer, ifelse(
+                               answer == "Cloud-based research data management", answer, ifelse(
+                                 answer == "Commercial cloud platforms (e.g., Sagemaker, RONIN)", answer, ifelse(
+                                   answer == "Commercial cloud usage", answer, ifelse(
+                                     answer == "Containers", answer, ifelse(
+                                       answer == "Not interested in training", answer, ifelse(
+                                         answer == "Using object storage", answer, ifelse(
+                                           answer == "Virtual machine backups", answer, "Other"
+                                         ))))))))))) %>% 
   filter(!answer_n == "delete")
 
 #summarize the data
@@ -2572,7 +2572,7 @@ q42_orga <-
         answer == "Not sure ", "Not sure", "Other_Yes"
       )))) %>% 
   filter(!answer_n == "Other_Yes")
-  
+
 
 
 
@@ -2591,7 +2591,7 @@ PieDonut(q42.summary,
          labelpositionThreshold=1, 
          showRatioThreshold = F, 
          title = "Should the Alliance allocate part of its\nbudget to provide commercial cloud\ncredits as an alternative to a Rapid Access\nService, Resource Allocation Competitions or\nResearch Platforms and Portals award?",
-        titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
+         titlesize = 5, pieAlpha = 1, donutAlpha = 1, color = "black")+ scale_fill_manual(values =  cb_pie)
 
 ### Q44 ######
 q44 <- 
