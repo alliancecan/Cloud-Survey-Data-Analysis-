@@ -1,3 +1,5 @@
+[needsassessment_alliance_20220126.pdf](https://github.com/faresdhane/Cloud-Survey-Data-Analysis-/files/11391136/needsassessment_alliance_20220126.pdf)
+
 # Context:
 
 The Digital Research Alliance of Canada (the Alliance) seeks to better  understand how Canadian researchers would like to use cloud services (i.e.,  compute and storage) to inform the development of its National Cloud  Strategy. The insights gathered through this survey will serve to identify gaps  in service provision (i.e., equity and accessibility) and improve the  functionality of the Alliance Cloud (i.e., ease of use and navigability). 
@@ -13,6 +15,8 @@ A summary of the findings will be shared with the community in Spring 2023.
 
 # Data sensitivity:
 This repository does not contain any sensitive data.
+
+[needsassessment_alliance_20220126.pdf](https://github.com/faresdhane/Cloud-Survey-Data-Analysis-/files/11391138/needsassessment_alliance_20220126.pdf)
 
 # Contexte:
 
