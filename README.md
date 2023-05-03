@@ -33,3 +33,5 @@ Ce référentiel est destiné à l'analyse des résultats de l'enquête qui ont 
 
 # Sensibilité des données:
 Ce référentiel ne contient aucune donnée sensible.
+
+![Alt text](https://ised-isde.canada.ca/site/ai-strategy/sites/default/files/images/2022-06/drac-logo-bil.jpg)
