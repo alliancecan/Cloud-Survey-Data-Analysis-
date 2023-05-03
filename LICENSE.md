@@ -42,7 +42,7 @@ The template used for this website is [syna][syna] which is licensed under the [
 
 MIT License
 
-Copyright (c) 2021 Research Software Alliance
+Copyright (c) 2021 Digital Research Alliance of Canada
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
