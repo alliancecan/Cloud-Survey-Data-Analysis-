@@ -25,7 +25,7 @@ L'enquête visait les chercheurs canadiens (c.-à-d. les professeurs, les admini
 
 Ce référentiel est destiné à l'analyse des résultats de l'enquête qui ont été recueillis entre le 16 janvier et le 13 février 2023. L'enquête a reçu des réponses de plus de 500 chercheurs de diverses disciplines universitaires au Canada.  Un résumé des résultats sera partagé avec la communauté au printemps 2023.
 
-#Reproduisez ce travail:
+# Reproduisez ce travail:
 **Pour reproduire ce travail**, exécutez le script "Final_Alliance_Cloud_Script_20230503.R" dans le dossier "Script", et assurez-vous de ré-spécifier le répertoire du projet.
 
 # Sensibilité des données:
