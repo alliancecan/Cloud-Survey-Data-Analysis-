@@ -17,6 +17,9 @@ A summary of the findings will be shared with the community in Spring 2023.
 # Data sensitivity:
 This repository does not contain any sensitive data.
 
+
+
+
 # Contexte:
 
 L'Alliance de recherche numérique du Canada (l'Alliance) cherche à mieux comprendre comment les chercheurs canadiens aimeraient utiliser les services infonuagiques (c.-à-d. le calcul et le stockage) pour informer le développement de sa stratégie nationale de nuage. Les informations recueillies grâce à cette enquête serviront à identifier les lacunes dans la prestation de services (c.-à-d. l'équité et l'accessibilité) et à améliorer la fonctionnalité du nuage de l'Alliance (c.-à-d. la facilité d'utilisation et la navigabilité). 
