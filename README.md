@@ -1,4 +1,5 @@
-[needsassessment_alliance_20220126.pdf](https://github.com/faresdhane/Cloud-Survey-Data-Analysis-/files/11391136/needsassessment_alliance_20220126.pdf)
+![Alt text](https://ised-isde.canada.ca/site/ai-strategy/sites/default/files/images/2022-06/drac-logo-bil.jpg)
+
 
 # Context:
 
