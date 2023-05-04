@@ -7,7 +7,7 @@
 *FINAL_Alliance_Cloud_Survey_Questions26_20230503.csv* is the cleaned version of question 26's answers, extracted from the main data file *FINAL_Alliance_Cloud_Survey_EN_FR_20220228.csv*.
 *FINAL_Alliance_Cloud_Survey_Questions32_20230503.csv* is the cleaned version of question 32s answers, extracted from the main data file *FINAL_Alliance_Cloud_Survey_EN_FR_20220228.csv*.
 
-The survey can be found in the main folder document "Cloud Needs Assessment Survey 2023_EN (Final).pdf".
+The survey can be found in the main folder, document "Cloud Needs Assessment Survey 2023_EN (Final).pdf".
 
 # Fr - Description des données:
 
@@ -17,4 +17,4 @@ The survey can be found in the main folder document "Cloud Needs Assessment Surv
 *FINAL_Alliance_Cloud_Survey_Questions26_20230503.csv* est la version nettoyée des réponses à la question 26, extraite du fichier de données principal *FINAL_Alliance_Cloud_Survey_EN_FR_20220228.csv*. 
 *FINAL_Alliance_Cloud_Survey_Questions32_20230503.csv* est la version nettoyée des réponses à la question 32, extraite du fichier de données principal *FINAL_Alliance_Cloud_Survey_EN_FR_20220228.csv*.
 
-Le sondage peut être trouvé dans le document principal du dossier ""
+Le sondage peut être trouvé dans le dossier principal, document "Sondage d’évaluation des besoins en infonuagique 2023_FR (Final).pdf".
