@@ -9,7 +9,6 @@ The survey was aimed at Canadian researchers (i.e., Professors,  Administrators,
 
 This repository is intended for the analysis of survey results that were collected between January 16th and February 13th, 2023. The survey received responses from over 500 researchers across various academic disciplines in Canada.
 
-A summary of the findings will be shared with the community in Spring 2023.
 
 # Reproduce this work:
 **To reproduce this work** run the script "Final_Alliance_Cloud_Script_20230503.R" in folder "Script", and make sure to re-specify the project's directory.
@@ -26,7 +25,7 @@ L'Alliance de recherche numérique du Canada (l'Alliance) cherche à mieux compr
 
 L'enquête visait les chercheurs canadiens (c.-à-d. les professeurs, les administrateurs, les étudiants de premier et deuxième cycle, les boursiers postdoctoraux, le personnel de recherche ou les associés de recherche), quels que soient leur niveau d'engagement avec le nuage de l'Alliance (anciennement Nuage Calcul Canada) ou d'autres services infonuagiques tels que Amazon Web Services, Microsoft Azure ou des offres de stockage comme Dropbox.  
 
-Ce référentiel est destiné à l'analyse des résultats de l'enquête qui ont été recueillis entre le 16 janvier et le 13 février 2023. L'enquête a reçu des réponses de plus de 500 chercheurs de diverses disciplines universitaires au Canada.  Un résumé des résultats sera partagé avec la communauté au printemps 2023.
+Ce référentiel est destiné à l'analyse des résultats de l'enquête qui ont été recueillis entre le 16 janvier et le 13 février 2023. L'enquête a reçu des réponses de plus de 500 chercheurs de diverses disciplines universitaires au Canada.
 
 # Reproduire ce travail:
 **Pour reproduire ce travail**, exécutez le script "Final_Alliance_Cloud_Script_20230503.R" dans le dossier "Script", et assurez-vous de ré-spécifier le répertoire du projet.
