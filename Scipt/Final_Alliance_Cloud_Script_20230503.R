@@ -485,12 +485,12 @@ Workfl1 <-
 TC3_Needs_sub <- mutate(Workfl1, "%" = (n/group_n)*100)
 
 #Add legend "No importance" to "Very important"
-# TC3_Needs_sub1 <- arrange(TC3_Needs_sub, TC3, cloud, order, answer)
-# TC3_Needs_sub1 <- TC3_Needs_sub1 %>% 
-#   mutate(answer2 = ifelse(answer == 2, "Very important", ifelse(
-#     answer == 1, "Important", ifelse(
-#       answer == 0, "Average", ifelse(
-#         answer == -1, "Little importance", "No importance")))))
+TC3_Needs_sub1 <- arrange(TC3_Needs_sub, TC3, cloud, order, answer)
+TC3_Needs_sub1 <- TC3_Needs_sub1 %>%
+  mutate(answer2 = ifelse(answer == 2, "Very important", ifelse(
+    answer == 1, "Important", ifelse(
+      answer == 0, "Average", ifelse(
+        answer == -1, "Little importance", "No importance")))))
 
 TC3_Needs_sub1 <- TC3_Needs_sub1 %>% 
   mutate(answer2 = ifelse(answer == 2, "A", ifelse(
@@ -1292,57 +1292,118 @@ q15$X15[q15$X15 == "Its bundled in with our overall storage for the University"]
 q15 <- q15 %>% drop_na()
 
 #link TC3 to q15 IDs
-q15.domain <- 
+#English version
+q15.domain.eng <- 
   q15 %>% 
   left_join(domain1, by = "Internal.ID") %>% 
   print() ## n = 192
 
 
-Workflow.q15 <- q15.domain
+Workflow.q15.eng  <- q15.domain.eng 
 
-Workflow.q15 <- 
-  q15.domain %>% 
-  mutate(TC3 = replace_na(Workflow.q15$TC3, "Other")) %>% 
+Workflow.q15.eng  <- 
+  q15.domain.eng %>% 
+  mutate(TC3 = replace_na(Workflow.q15.eng$TC3, "Other")) %>% 
   rename(answer = X15) %>% 
   unique()
 
-nHR <- filter(Workflow.q15, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #72
-nSE <- filter(Workflow.q15, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#102
-nSSH <- filter(Workflow.q15, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #64
+nHR.eng  <- filter(Workflow.q15.eng , TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #72
+nSE.eng  <- filter(Workflow.q15.eng , TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#102
+nSSH.eng  <- filter(Workflow.q15.eng , TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #64
 
 
 
-Workflow_Health <- filter(Workflow.q15, TC3=="Health Research") %>%
+Workflow_Health.eng  <- filter(Workflow.q15.eng , TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nHR)*100)
 
-Workflow_SciEng <- filter(Workflow.q15, TC3=="Sciences and Engineering") %>%
+Workflow_SciEng.eng  <- filter(Workflow.q15.eng, TC3=="Sciences and Engineering") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSE)*100)
 
-Workflow_SSH <- filter(Workflow.q15, TC3=="Social Sciences and Humanities") %>%
+Workflow_SSH.eng <- filter(Workflow.q15.eng, TC3=="Social Sciences and Humanities") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSSH)*100) 
 
-Workflow_Tri1 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+Workflow_Tri1.eng <- rbind(Workflow_SSH.eng, Workflow_SciEng.eng, Workflow_Health.eng)  
+
+#French version
+q15.domain.fr <- 
+  q15.domain.eng %>% 
+  mutate(FR = ifelse(
+    X15 == "Research grants ", "Subventions de recherche", ifelse(
+      X15 == "Industry grants or funding ", "Financement ou subventions de l’industrie", ifelse(
+        X15 == "Institutionally ", "Établissement", ifelse(
+          X15 == "Cloud research credits ", "Crédits de recherche en infonuagique", ifelse(
+            X15 == "Personal funding ", "Financement personnel", ifelse(
+              X15 == "service agreements", "Ententes de service", "Dons, frais d’utilisation"
+              ))))))) %>% 
+  select(-X15) %>% 
+  rename(X15 = FR)
+
+
+Workflow.q15.fr  <- q15.domain.fr 
+
+Workflow.q15.fr  <- 
+  q15.domain.fr %>% 
+  mutate(TC3 = replace_na(Workflow.q15.fr$TC3, "Other")) %>% 
+  rename(answer = X15) %>% 
+  unique()
+
+nHR.fr  <- filter(Workflow.q15.fr , TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #72
+nSE.fr  <- filter(Workflow.q15.fr , TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#102
+nSSH.fr  <- filter(Workflow.q15.fr , TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #64
+
+
+
+Workflow_Health.fr  <- filter(Workflow.q15.fr , TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng.fr  <- filter(Workflow.q15.fr, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH.fr <- filter(Workflow.q15.fr, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+Workflow_Tri1.fr <- rbind(Workflow_SSH.fr, Workflow_SciEng.fr, Workflow_Health.fr)  
 
 #### Plot ####
-ggplot(Workflow_Tri1, aes(x=reorder(answer,`%`))) + 
+#English version
+ggplot(Workflow_Tri1.eng, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Commercial Cloud Budget") +
+  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("") +
   xlab("") + 
   ylab("")
 
+#French version
+ggplot(Workflow_Tri1.fr, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("") +
+  xlab("") + 
+  ylab("")
 
 ### Q16 - How is your commercial cloud budget funded? ######
 q16 <- 
