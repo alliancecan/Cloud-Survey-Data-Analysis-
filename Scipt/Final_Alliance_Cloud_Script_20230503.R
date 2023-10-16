@@ -28,7 +28,7 @@ survey <- read.csv("FINAL_Alliance_Cloud_Survey_EN_FR_20220228.csv",
                    header = T,
                    encoding = "UTF-8",
                    na.strings=c("","NA")) %>% 
-  rename(Internal.ID = X.U.FEFF.Internal.ID)
+  rename(Internal.ID = Internal.ID)
 
 #Delete no needed columns: Here columns 10, 12, 20, and 21 are for "Other please specify" which have been cleaned into new columns "Xn....New_Other". So no need to keep them in the table.
 
@@ -748,8 +748,9 @@ q10 <- survey_organized_spread %>%
 #Create a table with domain for TC3 by ID
 domain1 # n = 474
 
+#English version
 #Organize q10 by adding all "other" answers together
-q10_orga <- 
+q10_orga.eng <- 
   q10 %>%
   filter(!factor == "Other") %>% 
   mutate(answer =
@@ -774,8 +775,8 @@ q10_orga <-
 
 
 #summarize the data
-q10_summary <- 
-  q10_orga %>% 
+q10_summary.eng <- 
+  q10_orga.eng %>% 
   group_by(answer) %>% 
   count() %>% 
   arrange(-n) %>% 
@@ -783,56 +784,141 @@ q10_summary <-
 
 
 #link TC3 to q7 IDs
-q10.domain <- 
-  q10_orga %>% 
+q10.domain.eng <- 
+  q10_orga.eng %>% 
   left_join(domain1, by = "Internal.ID") %>% 
   select(-factor) %>% 
   print() ## n = 356
 
 
-Workflow.q10 <- 
-  q10.domain %>% 
+Workflow.q10.eng <- 
+  q10.domain.eng %>% 
   unique()
 
 
-nHR <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
-nSE <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
-nSSH <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
+nHR.eng <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
+nSE.eng <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
+nSSH.eng <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
 
 
-Workflow_Health <- filter(Workflow.q10, TC3=="Health Research") %>%
+Workflow_Health.eng <- filter(Workflow.q10.eng, TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nHR)*100)
 
-Workflow_SciEng <- filter(Workflow.q10, TC3=="Sciences and Engineering") %>%
+Workflow_SciEng.eng <- filter(Workflow.q10.eng, TC3=="Sciences and Engineering") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSE)*100)
 
-Workflow_SSH <- filter(Workflow.q10, TC3=="Social Sciences and Humanities") %>%
+Workflow_SSH.eng <- filter(Workflow.q10.eng, TC3=="Social Sciences and Humanities") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
   mutate('%' = (n / nSSH)*100) 
 
 
-Workflow_Tri2 <- rbind(Workflow_SSH, Workflow_SciEng, Workflow_Health)  
+Workflow_Tri2.eng <- rbind(Workflow_SSH.eng, Workflow_SciEng.eng, Workflow_Health.eng)  
+
+#French version
+#Organize q10 by adding all "other" answers together
+q10_orga.fr <- 
+  q10 %>%
+  filter(!factor == "Other") %>% 
+  mutate(answer =
+           ifelse(factor == "Ease of use ", "Facilité d'utilisation", ifelse(
+             factor == "Cost ", "Coût", ifelse(
+               factor == "Scalability ", "Extensibilité", ifelse(
+                 factor == "Vendor-agnostic features ", "Caractéristiques indépendantes du fournisseur" , ifelse(
+                   factor == "security","Respect de la vie privée et sécurité" , ifelse(
+                     factor == "privacy and security", "Respect de la vie privée et sécurité", ifelse(
+                       factor == "Security", "Respect de la vie privée et sécurité", ifelse(
+                         factor == "Privacy", "Respect de la vie privée et sécurité", ifelse(
+                           factor == "safety-confidentiality", "Respect de la vie privée et sécurité", ifelse(
+                             factor == "privacy", "Respect de la vie privée et sécurité", ifelse(
+                               factor == "digital safety, privacy", "Respect de la vie privée et sécurité", ifelse(
+                                 factor == "Security; Popularity (Which platform others in my discipline are using for ease of collaboration)", "Respect de la vie privée et sécurité", ifelse(
+                                   factor == "Security, privacy, laws", "Respect de la vie privée et sécurité", ifelse(
+                                     factor == "Security, accessibility in other countries (e.g., China)", "Respect de la vie privée et sécurité", ifelse(
+                                       factor == "Security standards", "Respect de la vie privée et sécurité", ifelse(
+                                         factor == "Security for sensitive health data", "Respect de la vie privée et sécurité", ifelse(
+                                           factor == "Security and the ethics of the corporation producing it. If you're pushing the WEF agenda, take a hike.", "Respect de la vie privée et sécurité", "Autres"
+                                         )))))))))))))))))) # the last "delete" is to delete "not applicable"
+
+
+#summarize the data
+q10_summary.fr <- 
+  q10_orga.fr %>% 
+  group_by(answer) %>% 
+  count() %>% 
+  arrange(-n) %>% 
+  print()
+
+
+#link TC3 to q7 IDs
+q10.domain.fr <- 
+  q10_orga.fr %>% 
+  left_join(domain1, by = "Internal.ID") %>% 
+  select(-factor) %>% 
+  print() ## n = 356
+
+
+Workflow.q10.fr <- 
+  q10.domain.fr %>% 
+  unique()
+
+
+nHR.fr <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
+nSE.fr <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
+nSSH.fr <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
+
+
+Workflow_Health.fr <- filter(Workflow.q10.fr, TC3=="Health Research") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nHR)*100)
+
+Workflow_SciEng.fr <- filter(Workflow.q10.fr, TC3=="Sciences and Engineering") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSE)*100)
+
+Workflow_SSH.fr <- filter(Workflow.q10.fr, TC3=="Social Sciences and Humanities") %>%
+  group_by(TC3, answer) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n),.by_group = T) %>%
+  mutate('%' = (n / nSSH)*100) 
+
+
+Workflow_Tri2.fr <- rbind(Workflow_SSH.fr, Workflow_SciEng.fr, Workflow_Health.fr)  
 
 ### Stacked Bar Graph on Cloud uses by TRC #### 
 
-ggplot(Workflow_Tri2, aes(x=reorder(answer,`%`))) + 
+#English version
+ggplot(Workflow_Tri2.eng, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "left", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
-  ggtitle("Factors influencing choice of Cloud Platform") +
+  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("") +
   xlab("") + 
   ylab("")
 
+#French version
+ggplot(Workflow_Tri2.fr, aes(x=reorder(answer,`%`))) + 
+  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  scale_fill_manual(values =  cbp1) + 
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  theme_linedraw(base_size = 18) +
+  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  ggtitle("") +
+  xlab("") + 
+  ylab("")
 
 ### Q11 - Do your cloud needs include storing or processing controlled or sensitive data (e.g., data owned by First Nations, personal data, data subject to a data sharing agreement or specific security requirements)?? ######
 q11 <- 
