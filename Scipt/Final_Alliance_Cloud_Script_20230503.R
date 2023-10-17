@@ -805,19 +805,19 @@ Workflow_Health.eng <- filter(Workflow.q10.eng, TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nHR)*100)
+  mutate('%' = (n / nHR.eng)*100)
 
 Workflow_SciEng.eng <- filter(Workflow.q10.eng, TC3=="Sciences and Engineering") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSE)*100)
+  mutate('%' = (n / nSE.eng)*100)
 
 Workflow_SSH.eng <- filter(Workflow.q10.eng, TC3=="Social Sciences and Humanities") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
+  mutate('%' = (n / nSSH.eng)*100) 
 
 
 Workflow_Tri2.eng <- rbind(Workflow_SSH.eng, Workflow_SciEng.eng, Workflow_Health.eng)  
@@ -879,19 +879,19 @@ Workflow_Health.fr <- filter(Workflow.q10.fr, TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nHR)*100)
+  mutate('%' = (n / nHR.fr)*100)
 
 Workflow_SciEng.fr <- filter(Workflow.q10.fr, TC3=="Sciences and Engineering") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSE)*100)
+  mutate('%' = (n / nSE.fr)*100)
 
 Workflow_SSH.fr <- filter(Workflow.q10.fr, TC3=="Social Sciences and Humanities") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
+  mutate('%' = (n / nSSH.fr)*100) 
 
 
 Workflow_Tri2.fr <- rbind(Workflow_SSH.fr, Workflow_SciEng.fr, Workflow_Health.fr)  
@@ -904,18 +904,31 @@ ggplot(Workflow_Tri2.eng, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
+        axis.text=element_text(size=20), legend.title = element_blank(),
+        legend.text=element_text(size=20))+
   ggtitle("") +
   xlab("") + 
   ylab("")
 
+
+
+Workflow_Tri2.fr <- 
+  Workflow_Tri2.fr %>% 
+  mutate(TC3n = ifelse(
+    TC3 == "Social Sciences and Humanities", "Sciences humaines et sociales", ifelse(
+      TC3 == "Sciences and Engineering", "Sciences et génie", "Recherche en santé"
+    )))
+
 #French version
 ggplot(Workflow_Tri2.fr, aes(x=reorder(answer,`%`))) + 
-  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  geom_bar(aes(y=`%`, fill = TC3n), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
+        axis.text=element_text(size=20), legend.title = element_blank(),
+        legend.text=element_text(size=20))+
   ggtitle("") +
   xlab("") + 
   ylab("")
@@ -1317,19 +1330,19 @@ Workflow_Health.eng  <- filter(Workflow.q15.eng , TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nHR)*100)
+  mutate('%' = (n / nHR.eng)*100)
 
 Workflow_SciEng.eng  <- filter(Workflow.q15.eng, TC3=="Sciences and Engineering") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSE)*100)
+  mutate('%' = (n / nSE.eng)*100)
 
 Workflow_SSH.eng <- filter(Workflow.q15.eng, TC3=="Social Sciences and Humanities") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
+  mutate('%' = (n / nSSH.eng)*100) 
 
 Workflow_Tri1.eng <- rbind(Workflow_SSH.eng, Workflow_SciEng.eng, Workflow_Health.eng)  
 
@@ -1366,19 +1379,19 @@ Workflow_Health.fr  <- filter(Workflow.q15.fr , TC3=="Health Research") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nHR)*100)
+  mutate('%' = (n / nHR.fr)*100)
 
 Workflow_SciEng.fr  <- filter(Workflow.q15.fr, TC3=="Sciences and Engineering") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSE)*100)
+  mutate('%' = (n / nSE.fr)*100)
 
 Workflow_SSH.fr <- filter(Workflow.q15.fr, TC3=="Social Sciences and Humanities") %>%
   group_by(TC3, answer) %>%
   summarize(n = n()) %>%
   arrange(desc(n),.by_group = T) %>%
-  mutate('%' = (n / nSSH)*100) 
+  mutate('%' = (n / nSSH.fr)*100) 
 
 Workflow_Tri1.fr <- rbind(Workflow_SSH.fr, Workflow_SciEng.fr, Workflow_Health.fr)  
 
@@ -1389,21 +1402,34 @@ ggplot(Workflow_Tri1.eng, aes(x=reorder(answer,`%`))) +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
+        axis.text=element_text(size=20), legend.title = element_blank(),
+        legend.text=element_text(size=20))+
   ggtitle("") +
   xlab("") + 
   ylab("")
 
+
+Workflow_Tri1.fr <- 
+  Workflow_Tri1.fr %>% 
+  mutate(TC3n = ifelse(
+    TC3 == "Social Sciences and Humanities", "Sciences humaines et sociales", ifelse(
+      TC3 == "Sciences and Engineering", "Sciences et génie", "Recherche en santé"
+    )))
+
 #French version
 ggplot(Workflow_Tri1.fr, aes(x=reorder(answer,`%`))) + 
-  geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
+  geom_bar(aes(y=`%`, fill = TC3n), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
   coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
   theme_linedraw(base_size = 18) +
-  theme(legend.position = "none", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank())+
+  theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
+        axis.text=element_text(size=20), legend.title = element_blank(),
+        legend.text=element_text(size=20))+
   ggtitle("") +
   xlab("") + 
   ylab("")
+
 
 ### Q16 - How is your commercial cloud budget funded? ######
 q16 <- 
