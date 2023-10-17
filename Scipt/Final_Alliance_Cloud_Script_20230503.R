@@ -1397,6 +1397,8 @@ Workflow_Tri1.fr <- rbind(Workflow_SSH.fr, Workflow_SciEng.fr, Workflow_Health.f
 
 #### Plot ####
 #English version
+Workflow_Tri1.eng$answer[Workflow_Tri1.eng$answer == "service agreements"] <- "Service agreements"
+
 ggplot(Workflow_Tri1.eng, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
