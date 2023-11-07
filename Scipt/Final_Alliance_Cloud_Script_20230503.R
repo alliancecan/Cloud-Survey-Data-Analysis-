@@ -1402,7 +1402,7 @@ Workflow_Tri1.eng$answer[Workflow_Tri1.eng$answer == "service agreements"] <- "S
 ggplot(Workflow_Tri1.eng, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 5) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
         axis.text=element_text(size=20), legend.title = element_blank(),
@@ -1423,7 +1423,7 @@ Workflow_Tri1.fr <-
 ggplot(Workflow_Tri1.fr, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3n), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0))) +
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 5) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
         axis.text=element_text(size=20), legend.title = element_blank(),
