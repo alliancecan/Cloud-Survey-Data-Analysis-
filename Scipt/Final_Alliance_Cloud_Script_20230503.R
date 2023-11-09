@@ -1,7 +1,7 @@
 # Prepare the directory and load the libraries ----------------------------
 
 ###Set working directory
-setwd("C:/Users/fsdha/Downloads/Cloud-Survey-Data-Analysis--main/Cloud-Survey-Data-Analysis--main/Data")
+setwd("...")
 
 ###load libraries
 library(tidyverse)
@@ -796,9 +796,9 @@ Workflow.q10.eng <-
   unique()
 
 
-nHR.eng <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
-nSE.eng <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
-nSSH.eng <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
+nHR.eng <- filter(Workflow.q10.eng, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
+nSE.eng <- filter(Workflow.q10.eng, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
+nSSH.eng <- filter(Workflow.q10.eng, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
 
 
 Workflow_Health.eng <- filter(Workflow.q10.eng, TC3=="Health Research") %>%
@@ -870,9 +870,9 @@ Workflow.q10.fr <-
   unique()
 
 
-nHR.fr <- filter(Workflow.q10, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
-nSE.fr <- filter(Workflow.q10, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
-nSSH.fr <- filter(Workflow.q10, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
+nHR.fr <- filter(Workflow.q10.fr, TC3 == "Health Research") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #111
+nSE.fr <- filter(Workflow.q10.fr, TC3 == "Sciences and Engineering") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric()#191
+nSSH.fr <- filter(Workflow.q10.fr, TC3 == "Social Sciences and Humanities") %>% select(Internal.ID) %>% unique() %>% count() %>% as.numeric() #114
 
 
 Workflow_Health.fr <- filter(Workflow.q10.fr, TC3=="Health Research") %>%
@@ -902,7 +902,7 @@ Workflow_Tri2.fr <- rbind(Workflow_SSH.fr, Workflow_SciEng.fr, Workflow_Health.f
 ggplot(Workflow_Tri2.eng, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 5) +
+  coord_flip() +#geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 6.5) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
         axis.text=element_text(size=20), legend.title = element_blank(),
@@ -924,7 +924,7 @@ Workflow_Tri2.fr <-
 ggplot(Workflow_Tri2.fr, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3n), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 5) +
+  coord_flip() +#geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 6.5) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
         axis.text=element_text(size=20), legend.title = element_blank(),
@@ -1402,7 +1402,7 @@ Workflow_Tri1.eng$answer[Workflow_Tri1.eng$answer == "service agreements"] <- "S
 ggplot(Workflow_Tri1.eng, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 5) +
+  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 6.5) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
         axis.text=element_text(size=20), legend.title = element_blank(),
@@ -1423,7 +1423,7 @@ Workflow_Tri1.fr <-
 ggplot(Workflow_Tri1.fr, aes(x=reorder(answer,`%`))) + 
   geom_bar(aes(y=`%`, fill = TC3n), stat= "identity") +
   scale_fill_manual(values =  cbp1) + 
-  coord_flip() +geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 5) +
+  coord_flip() +#geom_text(position = position_stack(vjust = .5), aes(y=`%`, label=round(`%`, digits = 0)), size = 6.5) +
   theme_linedraw(base_size = 18) +
   theme(legend.position = "bottom", legend.justification = "right", panel.grid.major.y = element_line(linetype = 2), panel.grid.minor.x = element_line(size = 0), panel.background = element_blank(),
         axis.text=element_text(size=20), legend.title = element_blank(),
